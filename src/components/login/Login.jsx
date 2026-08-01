@@ -103,11 +103,7 @@ export function Login({ showLogin, setShowLogin, setMobileActiveKey }) {
         }
       }
     }
-    if (setting?.phone_login == 1) {
-      setInputType("number");
-    } else if (setting?.email_login == 1) {
-      setInputType("email");
-    }
+    setInputType("email");
   }, [showLogin]);
 
   useEffect(() => {
@@ -132,9 +128,8 @@ export function Login({ showLogin, setShowLogin, setMobileActiveKey }) {
   };
 
   useEffect(() => {
-    if (showLogin) {
-      generateRecaptcha();
-    }
+    // OTP login is temporarily disabled. Keep the helpers available for a
+    // later rollout, but do not initialize Firebase reCAPTCHA in this flow.
     return () => {
       recaptchaClear();
     };
@@ -574,9 +569,8 @@ export function Login({ showLogin, setShowLogin, setMobileActiveKey }) {
       } else {
         setLoading(false);
         if (res.message == "email_not_verified") {
-          setIsOTP(true);
-          toast.error(t("email_not_verified"));
-          setOtp("");
+          setError(t("email_not_verified"));
+          setIsOTP(false);
         } else if (res.message == "user_does_not_exist") {
           setError(t("user_does_not_exist"));
           // setInputValue("")
@@ -763,8 +757,9 @@ export function Login({ showLogin, setShowLogin, setMobileActiveKey }) {
           value={email}
           onChange={(e) => handleEmailChange(e.target.value, {})}
           className="border-black border-[1px] py-2 px-4 rounded-sm w-full "
-          placeholder={t("email_placeholder")}
+          placeholder="Username or email"
           ref={inputRef}
+          autoComplete="username"
         />
         <input
           type={showPassword ? "text" : "password"}
@@ -772,20 +767,13 @@ export function Login({ showLogin, setShowLogin, setMobileActiveKey }) {
           onChange={(e) => setPassword(e.target.value)}
           className="border-black border-[1px] py-2 px-4 rounded-sm w-full mt-4"
           placeholder={t("passwordMessage")}
+          autoComplete="current-password"
         />
         <div
           className="absolute right-[10px] top-[72px]"
           onClick={handlePasswordShow}
         >
           {showPassword ? <FaRegEyeSlash /> : <FaRegEye />}
-        </div>
-        <div className="text-base font-medium leading-6 mt-2 text-right">
-          <p
-            className="cursor-pointer"
-            onClick={(e) => handleShowForgotPassword("email")}
-          >
-            {t("forget_password_?")}
-          </p>
         </div>
         <button
           disabled={loading}
@@ -926,92 +914,9 @@ export function Login({ showLogin, setShowLogin, setMobileActiveKey }) {
                 </form>
               ) : (
                 <>
-                  <div className="my-4 flex flex-col gap-2 ">
-                    {setting?.email_login == 1 && setting?.phone_login == 1 ? (
-                      inputType == "number" ? (
-                        renderPhoneInput()
-                      ) : (
-                        renderEmailInput()
-                      )
-                    ) : setting?.phone_login == 1 ? (
-                      renderPhoneInput()
-                    ) : setting?.email_login == 1 ? (
-                      renderEmailInput()
-                    ) : (
-                      <></>
-                    )}
+                  <div className="my-4 flex flex-col gap-2">
+                    {renderEmailInput()}
                   </div>
-
-                  {setting?.google_login == 1 &&
-                    (setting?.email_login == 1 || setting?.phone_login == 1) ? (
-                    <div className="flex items-center justify-between my-4 gap-2">
-                      <hr className="flex-grow border-t-2 border-dashed border-gray-300" />
-                      <span className=" text-[#4B6272] font-bold text-base">
-                        {t("or")}
-                      </span>
-                      <hr className="flex-grow border-t-2 border-dashed border-gray-300" />
-                    </div>
-                  ) : (
-                    <></>
-                  )}
-                  {setting?.google_login == 1 && (
-                    <>
-                      <div className="my-4">
-                        <button
-                          onClick={handleGoogleLogin}
-                          className="w-full border-[1px] py-2  px-4 rounded-sm  gap-2 flex items-center justify-center text-base font-normal"
-                        >
-                          <Image
-                            src={GoogleLogo}
-                            alt="Google logo"
-                            height={30}
-                            width={30}
-                            className="h-[30px] w-[30px] object-cover "
-                          />{" "}
-                          {t("continue_with_google")}
-                        </button>
-                      </div>
-                    </>
-                  )}
-                  {setting?.email_login == 1 && inputType == "number" && (
-                    <>
-                      <div className="my-4">
-                        <button
-                          onClick={() => {
-                            setError("");
-                            setInputType("email");
-                            setOtp(null);
-                          }}
-                          // onClick={handleGoogleLogin}
-                          className="w-full border-[1px] py-2  px-4 rounded-sm  gap-2 flex items-center justify-center text-base font-normal"
-                        >
-                          <FaRegEnvelope
-                            size={30}
-                            className="h-[30px] w-[30px]"
-                          />{" "}
-                          {t("continue_with_email")}
-                        </button>
-                      </div>
-                    </>
-                  )}
-                  {setting?.phone_login == 1 && inputType == "email" && (
-                    <>
-                      <div className="my-4">
-                        <button
-                          onClick={() => {
-                            setInputType("number");
-                            setEmail("");
-                            setPassword("");
-                            setError("");
-                          }}
-                          className="w-full border-[1px] py-2  px-4 rounded-sm  gap-2 flex items-center justify-center text-base font-normal"
-                        >
-                          <FiPhone size={30} className="h-[30px] w-[30px]" />{" "}
-                          {t("continue_with_phone")}
-                        </button>
-                      </div>
-                    </>
-                  )}
                   <div className="py-6 flex items-center justify-center">
                     <p className="text-center">
                       {t("agreement_updated_message")}{" "}
@@ -1038,19 +943,6 @@ export function Login({ showLogin, setShowLogin, setMobileActiveKey }) {
           <div id="recaptcha-container" style={{ display: "none" }}></div>
         </DialogContent>
       </Dialog>
-      <NewUserModal
-        showNewUser={showNewUser}
-        setShowNewUser={setShowNewUser}
-        setPhoneNumberWithoutCountryCode={setPhoneNumberWithoutCountryCode}
-        setCountryCode={setCountryCode}
-        setEmail={setEmail}
-        setUserName={setUserName}
-        userName={userName}
-        email={email}
-        phoneNumberWithoutCountryCode={phoneNumberWithoutCountryCode}
-        countryCode={countryCode}
-        setIsOTP={setIsOTP}
-      />
       <Register
         setShowRegister={setShowRegister}
         showRegister={showRegister}
@@ -1061,12 +953,6 @@ export function Login({ showLogin, setShowLogin, setMobileActiveKey }) {
         inputType={inputType}
         setTimer={setTimer}
         setShowLogin={setShowLogin}
-      />
-      <ForgetPasswordModal
-        showForgetPassword={showForgetPassword}
-        setShowForgetPassword={setShowForgetPassword}
-        forgotPasswordType={forgotPasswordType}
-        isErrorMessage={isErrorMessage}
       />
     </>
   );

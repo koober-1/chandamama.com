@@ -757,9 +757,10 @@ export function Login({ showLogin, setShowLogin, setMobileActiveKey }) {
           value={email}
           onChange={(e) => handleEmailChange(e.target.value, {})}
           className="border-black border-[1px] py-2 px-4 rounded-sm w-full "
-          placeholder="Username or email"
+          placeholder={t("please_enter_email")}
           ref={inputRef}
-          autoComplete="username"
+          type="email"
+          autoComplete="email"
         />
         <input
           type={showPassword ? "text" : "password"}

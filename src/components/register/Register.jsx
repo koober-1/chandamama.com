@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
-import PhoneInput from "react-phone-input-2";
-import "react-phone-input-2/lib/style.css";
 import { RiCloseFill } from "react-icons/ri";
+import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux";
 import * as api from "@/api/apiRoutes";
@@ -16,27 +15,20 @@ import { t } from "@/utils/translation";
 
 const Register = ({ showRegister, setShowRegister, setShowLogin }) => {
   const dispatch = useDispatch();
-  const setting = useSelector((state) => state.Setting.setting);
-  const language = useSelector((state) => state.Language.selectedLanguage);
   const fcmToken = useSelector((state) => state.User?.fcm_token);
 
   const [email, setEmail] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [mobile, setMobile] = useState("");
-  const [countryCode, setCountryCode] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    const dialCode =
-      setting?.country_code || process.env.NEXT_PUBLIC_COUNTRY_DIAL_CODE || "91";
-    setCountryCode(String(dialCode).replace(/\D/g, ""));
-  }, [setting?.country_code]);
-
   const resetForm = () => {
     setEmail("");
-    setPhoneNumber("");
-    setMobile("");
+    setPassword("");
+    setConfirmPassword("");
+    setShowPassword(false);
     setError("");
     setIsLoading(false);
   };
@@ -44,17 +36,6 @@ const Register = ({ showRegister, setShowRegister, setShowLogin }) => {
   const handleClose = () => {
     resetForm();
     setShowRegister(false);
-  };
-
-  const handlePhoneChange = (value, data) => {
-    const dialCode = data?.dialCode || countryCode;
-    const localMobile = value.startsWith(dialCode)
-      ? value.slice(dialCode.length)
-      : value;
-
-    setPhoneNumber(value);
-    setMobile(localMobile);
-    setCountryCode(dialCode);
   };
 
   const handleRegister = async (event) => {
@@ -69,8 +50,13 @@ const Register = ({ showRegister, setShowRegister, setShowLogin }) => {
       return;
     }
 
-    if (!mobile) {
-      setError(t("please_enter_phone_number"));
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("Password and confirm password do not match.");
       return;
     }
 
@@ -79,11 +65,9 @@ const Register = ({ showRegister, setShowRegister, setShowLogin }) => {
       const response = await api.registerUser({
         name: normalizedEmail.split("@")[0],
         email: normalizedEmail,
-        mobile,
-        country_code: countryCode,
         type: "email",
-        // Current business rule: the mobile number is the initial password.
-        password: mobile,
+        password,
+        password_confirmation: confirmPassword,
         fcm: fcmToken,
       });
 
@@ -126,7 +110,7 @@ const Register = ({ showRegister, setShowRegister, setShowLogin }) => {
         <div className="flex flex-col mb-5">
           <h5 className="text-[34px] font-bold textColor">{t("welcome")}</h5>
           <span className="textColor text-xs">
-            Register quickly with your email and phone number.
+            Register with your email and password.
           </span>
         </div>
 
@@ -153,27 +137,47 @@ const Register = ({ showRegister, setShowRegister, setShowLogin }) => {
             />
           </div>
 
-          <div className="flex flex-col gap-1">
-            <label className="font-bold text-base">
-              {t("mobileNumber")} <span className="text-red-500">*</span>
+          <div className="flex flex-col gap-1 relative">
+            <label htmlFor="register-password" className="font-bold text-base">
+              {t("password")} <span className="text-red-500">*</span>
             </label>
-            <PhoneInput
-              inputStyle={{ direction: language?.type }}
-              country={
-                setting?.nation_code?.toLowerCase() ||
-                process.env.NEXT_PUBLIC_DEFAULT_COUNTRY_CODE
-              }
-              value={phoneNumber}
-              onChange={handlePhoneChange}
-              inputProps={{ required: true, autoComplete: "tel" }}
-              className="w-full"
+            <input
+              id="register-password"
+              type={showPassword ? "text" : "password"}
+              autoComplete="new-password"
+              required
+              minLength={6}
+              className="py-2 pl-4 pr-10 cardBorder outline-none rounded-sm"
+              placeholder={t("passwordMessage")}
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
             />
+            <button
+              type="button"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              className="absolute right-3 bottom-3"
+              onClick={() => setShowPassword((visible) => !visible)}
+            >
+              {showPassword ? <FaRegEyeSlash /> : <FaRegEye />}
+            </button>
           </div>
 
-          <p className="text-xs textColor">
-            Your phone number will be your initial password. You can change it
-            later from your profile.
-          </p>
+          <div className="flex flex-col gap-1">
+            <label htmlFor="register-confirm-password" className="font-bold text-base">
+              Confirm Password <span className="text-red-500">*</span>
+            </label>
+            <input
+              id="register-confirm-password"
+              type={showPassword ? "text" : "password"}
+              autoComplete="new-password"
+              required
+              minLength={6}
+              className="py-2 px-4 cardBorder outline-none rounded-sm"
+              placeholder="Confirm password"
+              value={confirmPassword}
+              onChange={(event) => setConfirmPassword(event.target.value)}
+            />
+          </div>
 
           <button
             type="submit"

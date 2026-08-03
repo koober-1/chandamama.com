@@ -12,26 +12,30 @@ export const registerUser = async ({
   fcm,
   country_code,
   password,
+  password_confirmation,
   phoneAuthType = false,
   friend_code,
   profile
   
 }) => {
   const formData = new FormData();
-  formData.append("name", name);
-  formData.append("country_code", country_code);
+  if (name) formData.append("name", name);
+  if (country_code) formData.append("country_code", country_code);
   formData.append("type", type);
-  formData.append("fcm_token", fcm);
+  if (fcm) formData.append("fcm_token", fcm);
   formData.append("platform", "web");
   if (type == "email" || (type == "phone" && phoneAuthType == true)) {
     formData.append("password", password);
+    if (password_confirmation) {
+      formData.append("password_confirmation", password_confirmation);
+    }
   }
   if(profile){
     formData.append("profile", profile);
   }
   if (
     type === "phone" ||
-    ((type === "email" || "google") && mobile !== null && mobile !== "")
+    ((type === "email" || type === "google") && mobile)
   ) {
     formData.append("mobile", mobile);
   }

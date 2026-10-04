@@ -19,7 +19,6 @@ import { FaMoon, FaRegUser, FaSun, FaCaretDown } from "react-icons/fa";
 import * as api from "@/api/apiRoutes";
 import {
   IoCartOutline,
-  IoLocationOutline,
   IoHomeOutline,
   IoSearchOutline,
   IoLanguage,
@@ -33,9 +32,6 @@ import CartDrawer from "../cart/CartDrawer";
 import { t } from "@/utils/translation";
 import { useDispatch, useSelector } from "react-redux";
 import dynamic from "next/dynamic";
-const Location = dynamic(() => import("../locationmodal/Location"), {
-  ssr: false,
-});
 const Login = dynamic(() => import("../login/Login"), {
   ssr: false,
 });
@@ -66,7 +62,6 @@ import {
   BiCart,
 } from "react-icons/bi";
 import { RiLogoutCircleRLine } from "react-icons/ri";
-import { LuMapPin } from "react-icons/lu";
 import { LocalizedLink } from "@/utils/localizedNav";
 import { useRouter } from "next/router";
 import { setCity } from "@/redux/slices/citySlice";
@@ -114,7 +109,6 @@ const Header = () => {
   const [selectedTab, setSelectedTab] = useState("profile");
   const [showProfile, setShowProfile] = useState(false);
 
-  const [showLocation, setShowLocation] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const [mobileSearch, setMobileSearch] = useState(false);
@@ -241,10 +235,6 @@ const Header = () => {
 
   const handleLoginOpen = () => {
     setShowLogin(true);
-  };
-
-  const handleOpenLocation = () => {
-    setShowLocation(true);
   };
 
   const handleHomeClick = () => {

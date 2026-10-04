@@ -6,7 +6,7 @@ const access_key_param = "x-access-key";
 const access_key = "903361";
 
 const isClient = typeof window !== "undefined";
-const url = isClient ? "" : (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000");
+const url = isClient ? "" : (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000" || "https://login.chandaamama.com");
 const subUrl = process.env.NEXT_PUBLIC_API_SUBURL || "/customer";
 const api = axios.create({
   baseURL: `${url}${subUrl}/`,
@@ -55,8 +55,8 @@ api.interceptors.response.use(
     }
   },
   (error) => {
-    if(error?.response?.status === 401){
-      
+    if (error?.response?.status === 401) {
+
       store.dispatch(logoutAuth());
     }
     console.error("Error while fetching data", error);

@@ -59,31 +59,51 @@ const NotificationSetting = () => {
     }
 
     return (
-        loading ? <Loader /> : (
-            <div>
-                <div className="cardBorder rounded-sm">
-                    <div className="backgroundColor flex justify-between p-4 items-center">
-                        <h2 className="font-bold text-xl">{t("notification_setting")}</h2>
+        loading ? (
+            <div className="py-20 flex justify-center items-center">
+                <Loader />
+            </div>
+        ) : (
+            <div className="w-full bg-white rounded-3xl border border-slate-200/80 shadow-card overflow-hidden">
+                <div className="bg-slate-50/70 border-b border-slate-100 p-5 md:p-6 flex justify-between items-center">
+                    <div>
+                        <h2 className="font-bold text-xl md:text-2xl text-slate-900 tracking-tight">{t("notification_setting")}</h2>
+                        <p className="text-xs text-slate-500 mt-0.5">Control which channel notifications are dispatched to</p>
                     </div>
                 </div>
-                <div>
-                    <div className='flex items-center justify-end gap-4 my-2'>
-                        <div>{t("email")}</div>
-                        <div>{t("mobileText")}</div>
+
+                <div className="p-5 md:p-6">
+                    <div className='flex items-center justify-end gap-10 mb-4 px-4 text-xs font-bold uppercase tracking-wider text-slate-400'>
+                        <span className="w-12 text-center">{t("email")}</span>
+                        <span className="w-12 text-center">{t("mobileText")}</span>
                     </div>
-                    {mailSettings?.map((item, index) => (
-                        <div key={item?.id} className='flex items-center justify-between py-2 border p-4 rounded-md my-2'>
-                            <h2 className='font-medium text-lg fontColor '>{item?.status_name?.substring(0, 16)}</h2>
-                            <div className='flex gap-4'>
-                                <Switch className="primaryBackColor" checked={Boolean(item.mail_status)} onCheckedChange={(checked) => handleToggle(item.id, 'mail_status', checked)} />
-                                <Switch className="primaryBackColor" checked={Boolean(item.mobile_status)} onCheckedChange={(checked) => handleToggle(item.id, 'mobile_status', checked)} />
+
+                    <div className="space-y-3">
+                        {mailSettings?.map((item) => (
+                            <div key={item?.id} className='flex items-center justify-between p-4 rounded-2xl border border-slate-100 bg-slate-50/40 hover:bg-slate-50/80 transition-colors'>
+                                <h4 className='font-semibold text-sm md:text-base text-slate-800'>{item?.status_name}</h4>
+                                <div className='flex items-center gap-10'>
+                                    <div className="w-12 flex justify-center">
+                                        <Switch 
+                                            checked={Boolean(item.mail_status)} 
+                                            onCheckedChange={(checked) => handleToggle(item.id, 'mail_status', checked)} 
+                                        />
+                                    </div>
+                                    <div className="w-12 flex justify-center">
+                                        <Switch 
+                                            checked={Boolean(item.mobile_status)} 
+                                            onCheckedChange={(checked) => handleToggle(item.id, 'mobile_status', checked)} 
+                                        />
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    ))}
-                    <div className="mt-6 flex justify-end w-full">
+                        ))}
+                    </div>
+
+                    <div className="mt-8 flex justify-end">
                         <button
-                            type="submit"
-                            className="w-28 bg-[#29363f] text-lg font-medium  text-white py-2 px-2 rounded-md "
+                            type="button"
+                            className="px-8 py-3 rounded-full bg-[#0BADFB] hover:bg-[#0298e0] text-white font-semibold text-sm shadow-md shadow-[#0BADFB]/20 transition-all hover:scale-[1.02] disabled:opacity-50"
                             disabled={submitting}
                             onClick={handleUpdateSettings}
                         >

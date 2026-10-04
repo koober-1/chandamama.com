@@ -17,62 +17,53 @@ const Homepage = () => {
   const dispatch = useDispatch();
   const router = useRouter();
   const setting = useSelector((state) => state.Setting.setting);
-  const isRefetch = useSelector((state) => state.Shop.isRefetch)
+  const isRefetch = useSelector((state) => state.Shop.isRefetch);
   const language = useSelector((state) => state.Language.selectedLanguage);
   const city = useSelector((state) => state.City.city);
 
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => { }, [language?.id]);
+  const defaultCity = setting?.default_city;
+  const latitude = city?.latitude
+    ? parseFloat(city.latitude)
+    : defaultCity?.latitude
+    ? parseFloat(defaultCity.latitude)
+    : 23.242;
+  const longitude = city?.longitude
+    ? parseFloat(city.longitude)
+    : defaultCity?.longitude
+    ? parseFloat(defaultCity.longitude)
+    : 69.6669;
 
   useEffect(() => {
     if (router?.pathname === "/") {
       dispatch(clearAllFilter());
     }
   }, []);
-  
 
-  
-  const { isLoading, data, isFetching,refetch } = useQuery({
-    queryKey: ["shopData", city?.latitude, city?.longitude, language?.id,isRefetch],
+  const { isLoading, data, isFetching, refetch } = useQuery({
+    queryKey: ["shopData", latitude, longitude, language?.id, isRefetch],
     queryFn: async () => {
-      const latitude = parseFloat(city?.latitude);
-      const longitude = parseFloat(city?.longitude);
       const response = await api.getShop({ latitude, longitude });
-
       dispatch(setShop({ data: response.data }));
-
       return response.data;
     },
-
-    enabled: !!city,
-
+    enabled: true,
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 30,
   });
-  
+
   useEffect(() => {
-  if (language?.id) {
-    refetch();
-  }
-}, [language?.id]);
+    if (language?.id) {
+      refetch();
+    }
+  }, [language?.id]);
 
   const showLoading = isLoading && !data;
 
   return (
     <div>
-      {
-        <Layout>
-          {showLoading ? (
-            <div>
-              {" "}
-              <HomeSkeleton />
-            </div>
-          ) : (
-            <Home />
-          )}
-        </Layout>
-      }
+      <Layout>
+        <Home shopData={data} isShopLoading={showLoading} />
+      </Layout>
     </div>
   );
 };

@@ -54,44 +54,55 @@ const WalletHistory = () => {
     }
 
     return (
-        <div>
-            <div className='w-full cardBorder rounded-sm '>
-                <div className='backgroundColor flex justify-between p-4 items-center'>
-                    <h2 className='font-bold text-xl'>{t("wallet_history")}</h2>
-                </div>
+        <div className='w-full bg-white rounded-3xl border border-slate-200/80 shadow-card overflow-hidden'>
+            <div className='bg-slate-50/70 border-b border-slate-100 flex justify-between p-5 md:p-6 items-center'>
                 <div>
-                    <div className='grid grid-cols-12 '>
-                        {loading ? Array?.from({ length: 6 })?.map((_, index) => {
-                            return (
-                                <div className='col-span-12  md:col-span-12 lg:col-span-6' key={index}>
-                                    <CardSkeleton height={200} padding='p-4' />
-                                </div>
-                            )
-                        }) : transactions?.length > 0 ? transactions?.map((transaction) => {
-                            return (
-                                <div className='col-span-12  md:col-span-12 xl:col-span-6 p-4 md:p-2 lg:p-4' key={transaction?.id}>
-                                    <WalletTransactionCard transaction={transaction} />
-                                </div>
-                            )
-                        }) : <div className=' col-span-12 h-full w-full flex items-center justify-center flex-col gap-2 p-2'>
-                            <Image src={NoTransactionFound} alt='Transactions Not found' height={320} width={320} unoptimized className='h-3/4 w-3/4' />
-                            <h2 className='text-2xl font-bold'>{t("no_transaction")}</h2>
-                        </div>}
-                        {loadingMore ?
-                            Array?.from({ length: 6 })?.map((_, index) => {
-                                return (
-                                    <div className='col-span-12  md:col-span-12 lg:col-span-4' key={index}>
-                                        <CardSkeleton height={200} padding='p-4' />
-                                    </div>
-                                )
-                            }) : <></>}
-
-                    </div>
-                    {total > transactions?.length && <div className='flex justify-center'>
-                        <button className='bg-[#29363f] text-white font-bold text-base p-2 my-2 rounded-sm' onClick={handleFetchMore}>{t("load_more")}</button>
-                    </div>}
-
+                    <h2 className='font-bold text-xl md:text-2xl text-slate-900 tracking-tight'>{t("wallet_history")}</h2>
+                    <p className='text-xs text-slate-500 mt-0.5'>Track credits and debits to your digital wallet</p>
                 </div>
+            </div>
+
+            <div className='p-5 md:p-6'>
+                {loading ? (
+                    <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                        {Array?.from({ length: 4 })?.map((_, index) => (
+                            <CardSkeleton height={160} padding='p-4' key={index} />
+                        ))}
+                    </div>
+                ) : transactions?.length > 0 ? (
+                    <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                        {transactions?.map((transaction) => (
+                            <WalletTransactionCard transaction={transaction} key={transaction?.id} />
+                        ))}
+                    </div>
+                ) : (
+                    <div className='py-16 px-4 flex items-center justify-center flex-col text-center'>
+                        <div className="w-24 h-24 mb-4 opacity-80">
+                            <Image src={NoTransactionFound} alt='Transactions Not found' height={120} width={120} unoptimized className='w-full h-full object-contain' />
+                        </div>
+                        <h3 className='text-lg font-bold text-slate-900'>{t("no_transaction")}</h3>
+                        <p className="text-xs text-slate-500 mt-1 max-w-xs">You have no wallet transactions recorded yet.</p>
+                    </div>
+                )}
+
+                {loadingMore && (
+                    <div className='grid grid-cols-1 md:grid-cols-2 gap-4 pt-4'>
+                        {Array?.from({ length: 2 })?.map((_, index) => (
+                            <CardSkeleton height={160} padding='p-4' key={index} />
+                        ))}
+                    </div>
+                )}
+
+                {total > transactions?.length && (
+                    <div className='flex justify-center pt-6 mt-4 border-t border-slate-100'>
+                        <button 
+                            className='px-6 py-2.5 rounded-full bg-slate-900 hover:bg-black text-white font-semibold text-xs shadow-sm transition-all hover:scale-[1.02]' 
+                            onClick={handleFetchMore}
+                        >
+                            {t("load_more")}
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     )

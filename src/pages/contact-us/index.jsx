@@ -89,8 +89,11 @@ const index = ({
   return (
     <div>
       <MetaData
-        title={title}
-        description={description}
+        title={title || "Contact Us - Chandamama | Customer Care & Support"}
+        description={
+          description ||
+          "Reach out to Chandamama Customer Support for inquiries, orders, deliveries, and feedback. We are always here to help you."
+        }
         keywords={keywords}
         structuredData={schemaMarkup}
         ogImage={ogImage}

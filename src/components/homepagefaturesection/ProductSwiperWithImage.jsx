@@ -39,35 +39,61 @@ const ProductSwiperWithImage = ({ section }) => {
     }
 
     return (
-        <div>
-            {section?.products?.length > 0 ? <section style={theme == "light" ? { backgroundColor: section?.background_color_for_light_theme } : { backgroundColor: section?.background_color_for_dark_theme }}>
-                <div className='container feature-section '>
+        <div className="py-6 md:py-10">
+            {section?.products?.length > 0 ? <section className='transition-colors' style={theme == "light" ? { backgroundColor: section?.background_color_for_light_theme || 'transparent' } : { backgroundColor: section?.background_color_for_dark_theme || 'transparent' }}>
+                <div className='container mx-auto px-4 feature-section'>
                     <div dir={language?.type}>
-                        <div className='flex justify-between items-center mb-3'>
-                            <div>
-                                <h2 className='textColor text-2xl sm:text-3xl font-extrabold tracking-[2px] leading-[29px] m-0'>{section?.translations?.title} </h2>
-                                <p className='shortDescriptionText'>{section?.translations?.short_description}</p>
-                            </div>
-                            <div className='flex  gap-0 md:gap-4 items-center flex-col md:flex-row'>
-                                <button onClick={handleViewAll} className='hover:primaryColor'>{t("see_all")}</button>
-                                <div className={` md:flex hidden gap-2 ${language?.type == "RTL" ? "flex-row-reverse" : ""}`}>
-                                    <button className={` group hover:primaryBackColor hover:text-white  transition-all duration-200 ease-linear swiperBorderColor rounded-full p-2 prev-btn-${section?.id} hover:primaryBorder`}><IoMdArrowBack className='swiperNavButtonColor group-hover:text-white transition-colors duration-200' size={20} /></button>
-                                    <button className={` group hover:primaryBackColor hover:text-white  transition-all duration-200 ease-linear swiperBorderColor rounded-full p-2 next-btn-${section?.id} hover:primaryBorder`} ><IoMdArrowForward className='swiperNavButtonColor group-hover:text-white transition-colors duration-200' size={20} /></button>
+                        {/* CHANDAMAMA Official Section Header */}
+                        <div className="relative border-b-2 border-[#0BADFB]/30 dark:border-[#0BADFB]/40 mb-8 pb-0">
+                            <div className="flex flex-wrap items-end justify-between gap-4">
+                                <div className="flex flex-wrap items-baseline gap-3 md:gap-4">
+                                    <span className="inline-block bg-[#FDD811] text-slate-900 font-extrabold text-xs sm:text-sm md:text-base uppercase tracking-wider px-5 sm:px-6 py-2 sm:py-2.5 rounded-t-xl shadow-2xs">
+                                        {section?.translations?.title || section?.title}
+                                    </span>
+                                    {section?.translations?.short_description && (
+                                        <span className="text-slate-600 dark:text-slate-300 text-xs sm:text-sm font-medium pb-2">
+                                            {section?.translations?.short_description}
+                                        </span>
+                                    )}
+                                </div>
+
+                                <div className="flex items-center gap-3 pb-2">
+                                    <button 
+                                        onClick={handleViewAll} 
+                                        className="flex items-center gap-1 px-4 py-1.5 rounded-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-[#0BADFB] hover:text-[#0BADFB] transition-all shadow-2xs cursor-pointer"
+                                    >
+                                        {t("see_all")}
+                                        <span className="text-xs">→</span>
+                                    </button>
+                                    <div className={`hidden md:flex items-center gap-1.5 ${language?.type == "RTL" ? "flex-row-reverse" : ""}`} >
+                                        <button 
+                                            className={`w-8 h-8 rounded-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-[#0BADFB] hover:border-[#0BADFB] hover:text-white text-slate-700 dark:text-slate-200 shadow-2xs flex items-center justify-center transition-all cursor-pointer prev-btn-${section?.id}`}
+                                            aria-label="Previous"
+                                        >
+                                            <IoMdArrowBack size={16} />
+                                        </button>
+                                        <button 
+                                            className={`w-8 h-8 rounded-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-[#0BADFB] hover:border-[#0BADFB] hover:text-white text-slate-700 dark:text-slate-200 shadow-2xs flex items-center justify-center transition-all cursor-pointer next-btn-${section?.id}`}
+                                            aria-label="Next"
+                                        >
+                                            <IoMdArrowForward size={16} />
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div className='grid grid-cols-1 mt-6  md:grid-cols-12 gap-4 md:gap-0 image-card '>
+                        <div className='grid grid-cols-1 mt-6 md:grid-cols-12 gap-5 items-stretch'>
                             {/* Image Section */}
                             <div className='md:col-span-3'>
-                                <div className='aspect-square w-full h-full relative '>
-                                    <Image src={section?.banner_web_url} fill sizes="(max-width: 768px) 100vw, 300px" priority={true} quality={85} alt='Logo' className='object-cover  rounded-tl-md rounded-bl-md' />
+                                <div className='w-full h-full min-h-[300px] relative rounded-2xl overflow-hidden shadow-card border border-slate-100 bg-slate-50'>
+                                    <Image src={section?.banner_web_url} fill sizes="(max-width: 768px) 100vw, 320px" priority={true} quality={85} alt='Section Banner' className='object-cover' />
                                 </div>
                             </div>
                             {/* Swiper Section */}
-                            <div className='md:col-span-9 '>
+                            <div className='md:col-span-9'>
                                 <Swiper
                                     key={rtl}
-                                    spaceBetween={0}
+                                    spaceBetween={16}
                                     modules={[Navigation]}
                                     navigation={
                                         {
@@ -79,28 +105,28 @@ const ProductSwiperWithImage = ({ section }) => {
                                     breakpoints={{
                                         1200: {
                                             slidesPerView: 3,
-                                            // spaceBetween: 10
+                                            spaceBetween: 16
                                         },
                                         1024: {
-                                            slidesPerView: 3,
-                                            // spaceBetween: 10
+                                            slidesPerView: 2.8,
+                                            spaceBetween: 14
                                         },
                                         768: {
                                             slidesPerView: 2,
-                                            // spaceBetween: 10
+                                            spaceBetween: 12
                                         },
                                         500: {
                                             slidesPerView: 2,
-                                            // spaceBetween: 10
+                                            spaceBetween: 10
                                         },
                                         300: {
-                                            slidesPerView: 1.5,
-                                            // spaceBetween: 10
+                                            slidesPerView: 1.3,
+                                            spaceBetween: 10
                                         },
                                     }}
                                 >
                                     {section?.products?.map((product, index) => (
-                                        <SwiperSlide key={product.id} className='h-auto '>
+                                        <SwiperSlide key={product.id} className='h-auto'>
                                             <VerticleProductCard product={product} />
                                         </SwiperSlide>
                                     ))}

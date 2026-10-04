@@ -24,43 +24,41 @@ const NotificationCard = ({ notification }) => {
   };
 
   return (
-    <div className="flex flex-row flex-wrap justify-start sm:justify-center items-center border border-b-1 p-4 gap-4 sm:p-8 sm:flex-nowrap">
-      <div className=" ">
-        {notification?.image_url !== "" ? (
-          <Image
-            src={notification?.image_url}
-            alt="notificationImg"
-            height={96}
-            width={96}
-            className="h-12 w-12"
-          />
+    <div className="flex items-start gap-4 p-4 rounded-2xl hover:bg-slate-50/70 transition-all border border-transparent hover:border-slate-100">
+      <div className="shrink-0">
+        {notification?.image_url ? (
+          <div className="w-12 h-12 rounded-2xl overflow-hidden border border-slate-100 bg-white p-1">
+            <Image
+              src={notification?.image_url}
+              alt="notification"
+              height={48}
+              width={48}
+              className="h-full w-full object-cover rounded-xl"
+            />
+          </div>
         ) : (
-          <FaRegBell
-            className="text-white primaryBackColor rounded w-12 h-12 p-2"
-            size={30}
-          />
+          <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-100/80 flex items-center justify-center">
+            <FaRegBell size={20} />
+          </div>
         )}
       </div>
-      <div className="w-full flex flex-col gap-2">
-        <div className="flex flex-col flex-wrap md:flex-row justify-between text-base textColor">
-          <div
-            className="font-bold flex-wrap justify-items-start cursor-pointer"
+
+      <div className="flex-1 min-w-0">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+          <h4
+            className="font-bold text-sm md:text-base text-slate-800 hover:text-emerald-700 transition-colors cursor-pointer truncate"
             onClick={() => handleCategoryNotificationClick(notification)}
           >
-            {notification?.title?.length > 55
-              ? `${notification?.title?.substr(0, 55)}...`
-              : notification?.title}
-          </div>
-          <div className="flex items-center gap-2">
-            <IoTimeOutline />
-            <div className="opacity-70 text-nowrap">
-              {notification?.date_sent}
-            </div>
+            {notification?.title}
+          </h4>
+          <div className="flex items-center gap-1.5 text-xs text-slate-400 shrink-0">
+            <IoTimeOutline size={14} />
+            <span>{notification?.date_sent}</span>
           </div>
         </div>
-        <div className="textColor text-sm text-justify">
+        <p className="text-xs md:text-sm text-slate-600 leading-relaxed mt-1">
           {notification?.message}
-        </div>
+        </p>
       </div>
     </div>
   );

@@ -260,58 +260,60 @@ const BreadCrumb = ({ title }) => {
 
 
   return (
-    <section className="p-3 md:p-6 breadCrumbBg">
-      <div className=" container px-2">
-        <div className="flex justify-between flex-col gap-1 md:flex-row">
-          <p className="text-xl font-bold capitalize">
+    <nav aria-label="Breadcrumb" className="py-4 md:py-5 bg-slate-50/70 border-b border-slate-100">
+      <div className="container mx-auto px-4 md:px-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <h1 className="text-lg md:text-xl font-bold tracking-tight text-slate-900 capitalize">
             {title
               ? title
               : breadcrumbs.length
                 ? handleCheckBreadCrumb()
                 : t("home")}
-          </p>
-          <div className="flex gap-1 items-center overflow-hidden ">
-            <LocalizedLink
-              href="/"
-              className="text-sm font-bold capitalize primaryColor"
-            >
-              {t("home")}
-            </LocalizedLink>
+          </h1>
+          <ol className="flex items-center gap-1.5 flex-wrap text-xs">
+            <li>
+              <LocalizedLink
+                href="/"
+                className="font-medium text-slate-500 hover:text-emerald-700 transition-colors"
+              >
+                {t("home")}
+              </LocalizedLink>
+            </li>
 
             {breadcrumbs.map((crumb, index) => (
-              <div
+              <li
                 key={crumb.href}
-                className="flex items-center gap-1 max-w-[150px]"
+                className="flex items-center gap-1.5"
               >
                 {rtl ? (
-                  <FaChevronLeft size={14} className="shrink-0"/>
+                  <FaChevronLeft size={10} className="text-slate-400 shrink-0" />
                 ) : (
-                  <FaChevronRight size={14} className="shrink-0"/>
+                  <FaChevronRight size={10} className="text-slate-400 shrink-0" />
                 )}
                 {index === breadcrumbs.length - 1 ? (
                   <span
-                    className="text-sm font-bold capitalize cursor-pointer text-ellipsis  whitespace-nowrap line-clamp-1"
-                    style={{ maxWidth: "100%" }}
+                    className="font-semibold text-slate-900 capitalize truncate max-w-[200px]"
                     title={crumb.label}
+                    aria-current="page"
                   >
                     {formatBreadcrumbLabel(crumb.label)}
                   </span>
                 ) : (
-                  <div
+                  <button
+                    type="button"
                     onClick={() => handleNotFoundRoutes(crumb.href)}
-                    className="text-sm font-bold capitalize text-ellipsis overflow-hidden whitespace-nowrap cursor-pointer primaryColor "
-                    style={{ maxWidth: "100%" }}
+                    className="font-medium text-slate-500 hover:text-emerald-700 capitalize truncate max-w-[150px] transition-colors"
                     title={crumb.label}
                   >
                     {formatBreadcrumbLabel(crumb.label)}
-                  </div>
+                  </button>
                 )}
-              </div>
+              </li>
             ))}
-          </div>
+          </ol>
         </div>
       </div>
-    </section>
+    </nav>
   );
 };
 

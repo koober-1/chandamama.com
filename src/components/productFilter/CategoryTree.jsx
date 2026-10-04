@@ -1,47 +1,80 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, Minus } from "lucide-react";
+import { Plus, Minus, Search, FolderTree } from "lucide-react";
 
 const CategoryTree = ({
   categories,
-  selectedCategories,
+  selectedCategories = [],
   onCategoryChange,
   initialFilter,
 }) => {
   const [treeData, setTreeData] = useState([]);
   const [expandedKeys, setExpandedKeys] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  // Transform categories into tree structure
-  const transformCategoryData = (categories) => {
-    return categories?.map((category) => ({
-      title: category?.translations?.name ?? category?.name,
-      key: category.id,
-      children:
-        category.cat_active_childs?.length > 0
-          ? transformCategoryData(category.cat_active_childs)
-          : [],
-    }));
+  // Recursively transform categories into tree structure
+  const transformCategoryData = (catList, level = 1) => {
+    if (!Array.isArray(catList)) return [];
+
+    return catList.map((category) => {
+      const childrenList =
+        category?.cat_active_childs ||
+        category?.all_active_childs ||
+        category?.all_childs ||
+        category?.children ||
+        category?.childs ||
+        category?.sub_categories ||
+        [];
+
+      const name = category?.translations?.name ?? category?.name ?? "Category";
+
+      return {
+        title: name,
+        key: category.id,
+        level,
+        image:
+          category?.image_url ||
+          category?.image ||
+          category?.translations?.image_url,
+        children:
+          childrenList.length > 0
+            ? transformCategoryData(childrenList, level + 1)
+            : [],
+      };
+    });
   };
 
   // Initialize tree data when categories change
   useEffect(() => {
     if (categories?.length > 0) {
-      const transformedData = transformCategoryData(categories);
+      const transformedData = transformCategoryData(categories, 1);
       setTreeData(transformedData);
     }
   }, [categories]);
 
-  // Initialize selected categories from filter
+  // Auto expand parent nodes when selectedCategories changes
   useEffect(() => {
-    if (initialFilter?.category_id) {
-      const categories = initialFilter?.category_id?.split(",");
-      const catNum = categories
-        .filter((cat) => cat !== "")
-        .map((cat) => parseInt(cat));
-      onCategoryChange(catNum);
+    if (selectedCategories?.length > 0 && treeData?.length > 0) {
+      const keysToExpand = [];
+      const findParents = (nodes, currentPath = []) => {
+        for (let node of nodes) {
+          const newPath = [...currentPath, node.key];
+          if (selectedCategories.includes(node.key)) {
+            keysToExpand.push(...currentPath);
+          }
+          if (node.children?.length > 0) {
+            findParents(node.children, newPath);
+          }
+        }
+      };
+      findParents(treeData);
+      if (keysToExpand.length > 0) {
+        setExpandedKeys((prev) => [...new Set([...prev, ...keysToExpand])]);
+      }
     }
-  }, [initialFilter]);
+  }, [selectedCategories, treeData]);
 
+  // Handle expand/collapse toggle
   const handleExpandCollapse = (nodeKey) => {
     setExpandedKeys((prev) =>
       prev.includes(nodeKey)
@@ -50,73 +83,28 @@ const CategoryTree = ({
     );
   };
 
-  const handleCheck = (checked, nodeKey, allChildKeys) => {
-    let newSelected = [...selectedCategories];
-
-    // Helper function to check if all children of a node are selected
-    const areAllChildrenSelected = (node) => {
-      if (!node.children?.length) return true;
-      return node.children.every((child) => newSelected.includes(child.key));
+  // Expand all or Collapse all
+  const toggleExpandAll = () => {
+    const getAllKeys = (nodes) => {
+      let keys = [];
+      nodes.forEach((n) => {
+        keys.push(n.key);
+        if (n.children?.length > 0) {
+          keys = [...keys, ...getAllKeys(n.children)];
+        }
+      });
+      return keys;
     };
 
-    // Helper function to add parent nodes when all children are selected
-    const addParentIfAllChildrenSelected = (nodes, childKey) => {
-      for (let node of nodes) {
-        if (node.children?.some((child) => child.key === childKey)) {
-          if (areAllChildrenSelected(node)) {
-            newSelected.push(node.key);
-            addParentIfAllChildrenSelected(treeData, node.key);
-          }
-        }
-        if (node.children?.length > 0) {
-          addParentIfAllChildrenSelected(node.children, childKey);
-        }
-      }
-    };
-
-    if (checked) {
-      // Add current node and all its children
-      newSelected = [...newSelected, nodeKey];
-
-      // Check and add parents if all siblings are selected
-      // addParentIfAllChildrenSelected(treeData, nodeKey);
+    const allKeys = getAllKeys(treeData);
+    if (expandedKeys.length >= allKeys.length) {
+      setExpandedKeys([]);
     } else {
-      // Remove current node and all its children
-      newSelected = newSelected.filter(
-        (key) => key !== nodeKey 
-      );
-
-      // Find and remove parent nodes recursively
-      // const findAndRemoveParents = (nodes, childKey) => {
-      //   for (let node of nodes) {
-      //     if (node.children?.some((child) => child.key === childKey)) {
-      //       // Check if all children are unchecked
-      //       const allChildrenUnchecked = node.children.every(
-      //         (child) => !newSelected.includes(child.key)
-      //       );
-
-      //       if (allChildrenUnchecked) {
-      //         // Remove the parent node
-      //         newSelected = newSelected.filter((key) => key !== node.key);
-      //         // Recursively check this node's parent
-      //         findAndRemoveParents(treeData, node.key);
-      //       }
-      //     }
-      //     if (node.children?.length > 0) {
-      //       findAndRemoveParents(node.children, childKey);
-      //     }
-      //   }
-      // };
-
-      // findAndRemoveParents(treeData, nodeKey);
+      setExpandedKeys(allKeys);
     }
-
-    // Remove duplicates
-    newSelected = [...new Set(newSelected)];
-    onCategoryChange(newSelected);
   };
 
-  // Get all child keys for a node
+  // Get all child keys for node
   const getAllChildKeys = (node) => {
     let keys = [];
     if (node.children?.length > 0) {
@@ -128,43 +116,91 @@ const CategoryTree = ({
     return keys;
   };
 
-  // Recursive component to render tree nodes
+  // Handle checkbox check / uncheck
+  const handleCheck = (checked, nodeKey, childKeys = []) => {
+    let newSelected = Array.isArray(selectedCategories) ? [...selectedCategories] : [];
+
+    if (checked) {
+      newSelected = [...newSelected, nodeKey, ...childKeys];
+    } else {
+      const removeKeys = new Set([nodeKey, ...childKeys]);
+      newSelected = newSelected.filter((key) => !removeKeys.has(key));
+    }
+
+    newSelected = [...new Set(newSelected)];
+    onCategoryChange(newSelected);
+  };
+
+  // Filter tree data by search query
+  const filterNodes = (nodes, query) => {
+    if (!query.trim()) return nodes;
+    const q = query.toLowerCase();
+
+    return nodes
+      .map((node) => {
+        const matchesName = node.title.toLowerCase().includes(q);
+        const filteredChildren = node.children ? filterNodes(node.children, query) : [];
+        if (matchesName || filteredChildren.length > 0) {
+          return {
+            ...node,
+            children: filteredChildren,
+          };
+        }
+        return null;
+      })
+      .filter(Boolean);
+  };
+
+  const visibleTreeData = useMemo(() => {
+    return filterNodes(treeData, searchQuery);
+  }, [treeData, searchQuery]);
+
+  // Recursive component for Tree Node
   const TreeNode = ({ node }) => {
-    const isExpanded = expandedKeys.includes(node.key);
+    const isExpanded = expandedKeys.includes(node.key) || searchQuery.trim().length > 0;
     const hasChildren = node.children?.length > 0;
-    const isChecked = selectedCategories.includes(node.key);
+    const isChecked = Array.isArray(selectedCategories) && selectedCategories.includes(node.key);
     const childKeys = getAllChildKeys(node);
 
     return (
-      <div className="ml-1 md:ml-1.5 lg:ml-2">
-        <div className="flex justify-between items-center my-2">
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => handleCheck(!isChecked, node.key, childKeys)}>
+      <div className={`my-0.5 transition-all ${node.level > 1 ? "ml-3 sm:ml-4 border-l border-slate-200 dark:border-slate-700/60 pl-2" : ""}`}>
+        <div className={`flex items-center justify-between py-1.5 px-2 rounded-xl transition-colors group hover:bg-slate-50 dark:hover:bg-slate-700/50 ${isChecked ? "bg-[#0BADFB]/10 text-[#0BADFB] font-bold" : ""}`}>
+          <div
+            className="flex items-center gap-2.5 cursor-pointer flex-1 min-w-0"
+            onClick={() => handleCheck(!isChecked, node.key, childKeys)}
+          >
             <Checkbox
-              className="data-[state=checked]:primaryBackColor shadow-sm border-gray-300 border-[1.5px]"
+              className="data-[state=checked]:bg-[#0BADFB] data-[state=checked]:border-[#0BADFB] border-slate-300 dark:border-slate-600 rounded-md"
               checked={isChecked}
-              onCheckedChange={(checked) =>
-                handleCheck(checked, node.key, childKeys)
-              }
+              onCheckedChange={(checked) => handleCheck(checked, node.key, childKeys)}
             />
-            <span className="text-sm font-normal text-ellipsis" >
+
+            <span className={`text-xs font-semibold truncate transition-colors ${isChecked ? "text-[#0BADFB] font-bold" : "text-slate-700 dark:text-slate-200 group-hover:text-slate-900"}`}>
               {node.title}
             </span>
           </div>
+
           {hasChildren && (
             <button
-              onClick={() => handleExpandCollapse(node.key)}
-              className="p-1 hover:bg-gray-100 rounded-full"
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleExpandCollapse(node.key);
+              }}
+              className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-200/60 dark:hover:bg-slate-600 transition-colors ml-1 shrink-0"
+              aria-label={isExpanded ? "Collapse" : "Expand"}
             >
               {isExpanded ? (
-                <Minus className="h-4 w-4" />
+                <Minus className="h-3.5 w-3.5 text-[#0BADFB]" />
               ) : (
-                <Plus className="h-4 w-4" />
+                <Plus className="h-3.5 w-3.5" />
               )}
             </button>
           )}
         </div>
+
         {hasChildren && isExpanded && (
-          <div className="ml-1">
+          <div className="mt-0.5">
             {node.children.map((child) => (
               <TreeNode key={child.key} node={child} />
             ))}
@@ -175,10 +211,45 @@ const CategoryTree = ({
   };
 
   return (
-    <div className="overflow-y-auto px-2 pb-4 md:px-2 lg:px-4">
-      {treeData.map((node) => (
-        <TreeNode key={node.key} node={node} />
-      ))}
+    <div className="w-full flex flex-col gap-2">
+      {/* Search & Tree Actions Bar */}
+      <div className="space-y-2 pb-2">
+        <div className="relative w-full">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search categories..."
+            className="w-full pl-8 pr-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-xs font-medium focus:outline-none focus:border-[#0BADFB] transition-colors"
+          />
+        </div>
+
+        <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 px-1">
+          <span>Categories</span>
+          <button
+            type="button"
+            onClick={toggleExpandAll}
+            className="text-[10px] font-bold text-[#0BADFB] hover:underline cursor-pointer flex items-center gap-1"
+          >
+            <FolderTree size={12} />
+            <span>{expandedKeys.length > 0 ? "Collapse" : "Expand"} All</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Tree Content */}
+      <div className="max-h-[360px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-slate-300">
+        {visibleTreeData.length > 0 ? (
+          visibleTreeData.map((node) => (
+            <TreeNode key={node.key} node={node} />
+          ))
+        ) : (
+          <div className="py-6 text-center text-xs font-semibold text-slate-400">
+            No categories found.
+          </div>
+        )}
+      </div>
     </div>
   );
 };

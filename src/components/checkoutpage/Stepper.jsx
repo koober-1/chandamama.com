@@ -1,64 +1,104 @@
 import React from "react";
 import { t } from "@/utils/translation";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
+import { FiCheck } from "react-icons/fi";
 
 const Stepper = ({ currentStep }) => {
   const checkout = useSelector((state) => state.Checkout);
+  const isDoorstep = checkout?.orderType === "doorstep";
 
   return (
-    <div className="flex justify-center items-center space-x-4 my-8 w-full">
-      <div className="flex flex-col justify-center gap-2 items-center">
+    <div className="flex justify-center items-center my-8 max-w-2xl mx-auto px-4 w-full">
+      {/* Step 1: Address / Pickup */}
+      <div className="flex flex-col items-center gap-2 relative z-10">
         <div
-          className={`flex items-center justify-center w-8 h-8 md:w-12 md:h-12 rounded-full  font-bold ${
-            currentStep >= 1
-              ? "primaryBackColor text-white"
-              : "backgroundColor "
+          className={`flex items-center justify-center w-10 h-10 md:w-11 md:h-11 rounded-full font-extrabold text-sm transition-all duration-300 ${
+            currentStep > 1
+              ? "bg-[#0BADFB] text-white shadow-md shadow-[#0BADFB]/20"
+              : currentStep === 1
+              ? "bg-[#0BADFB] text-white ring-4 ring-[#e0f7fe] shadow-md shadow-[#0BADFB]/20"
+              : "bg-slate-100 text-slate-400 border border-slate-200"
           }`}
         >
-          1
+          {currentStep > 1 ? <FiCheck className="text-base stroke-[3]" /> : "1"}
         </div>
-        <span>{t("address")}</span>
+        <span
+          className={`text-xs font-bold uppercase tracking-wider transition-colors ${
+            currentStep >= 1 ? "text-slate-900" : "text-slate-400"
+          }`}
+        >
+          {t("address")}
+        </span>
       </div>
 
-      {checkout?.orderType == "doorstep" && (
-        <div
-          className={`flex-1 border-t-2  border-gray-400 border-dashed
-                    mb-4 p-2 w-full`}
-        ></div>
-      )}
-
-      {checkout?.orderType == "doorstep" && (
-        <div className="flex flex-col justify-center gap-2 items-center">
+      {/* Connector Line 1 */}
+      {isDoorstep && (
+        <div className="flex-1 mx-2 -mt-6">
           <div
-            className={`flex items-center justify-center w-8 h-8 md:w-12 md:h-12 rounded-full  font-bold bg-gray-400
-                    ${
-                      currentStep >= 2
-                        ? "primaryBackColor text-white"
-                        : "backgroundColor "
-                    } 
-                    `}
-          >
-            2
-          </div>
-          <span>{t("schedule")}</span>
+            className={`h-0.5 transition-all duration-300 ${
+              currentStep > 1
+                ? "bg-[#0BADFB]"
+                : "border-t-2 border-dashed border-slate-200"
+            }`}
+          />
         </div>
       )}
 
-      <div
-        className={`flex-1 border-t-2  border-gray-400 border-dashed
-                 mb-4 p-2`}
-      ></div>
-      <div className="flex flex-col justify-center gap-2 items-center">
+      {/* Step 2: Schedule (Doorstep only) */}
+      {isDoorstep && (
+        <div className="flex flex-col items-center gap-2 relative z-10">
+          <div
+            className={`flex items-center justify-center w-10 h-10 md:w-11 md:h-11 rounded-full font-extrabold text-sm transition-all duration-300 ${
+              currentStep > 2
+                ? "bg-[#0BADFB] text-white shadow-md shadow-[#0BADFB]/20"
+                : currentStep === 2
+                ? "bg-[#0BADFB] text-white ring-4 ring-[#e0f7fe] shadow-md shadow-[#0BADFB]/20"
+                : "bg-slate-100 text-slate-400 border border-slate-200"
+            }`}
+          >
+            {currentStep > 2 ? <FiCheck className="text-base stroke-[3]" /> : "2"}
+          </div>
+          <span
+            className={`text-xs font-bold uppercase tracking-wider transition-colors ${
+              currentStep >= 2 ? "text-slate-900" : "text-slate-400"
+            }`}
+          >
+            {t("schedule")}
+          </span>
+        </div>
+      )}
+
+      {/* Connector Line 2 */}
+      <div className="flex-1 mx-2 -mt-6">
         <div
-          className={`flex items-center justify-center w-8 h-8 md:w-12 md:h-12 rounded-full  font-bold ${
-            currentStep >= 3
-              ? "primaryBackColor text-white"
-              : "backgroundColor "
+          className={`h-0.5 transition-all duration-300 ${
+            (isDoorstep && currentStep > 2) || (!isDoorstep && currentStep > 1)
+              ? "bg-[#0BADFB]"
+              : "border-t-2 border-dashed border-slate-200"
+          }`}
+        />
+      </div>
+
+      {/* Step 3 (or 2 for pickup): Payment */}
+      <div className="flex flex-col items-center gap-2 relative z-10">
+        <div
+          className={`flex items-center justify-center w-10 h-10 md:w-11 md:h-11 rounded-full font-extrabold text-sm transition-all duration-300 ${
+            (isDoorstep && currentStep === 3) || (!isDoorstep && currentStep === 2)
+              ? "bg-[#0BADFB] text-white ring-4 ring-[#e0f7fe] shadow-md shadow-[#0BADFB]/20"
+              : "bg-slate-100 text-slate-400 border border-slate-200"
           }`}
         >
-          {checkout?.orderType == "doorstep" ? 3 : 2}
+          {isDoorstep ? 3 : 2}
         </div>
-        <span>{t("payment")}</span>
+        <span
+          className={`text-xs font-bold uppercase tracking-wider transition-colors ${
+            (isDoorstep && currentStep >= 3) || (!isDoorstep && currentStep >= 2)
+              ? "text-slate-900"
+              : "text-slate-400"
+          }`}
+        >
+          {t("payment")}
+        </span>
       </div>
     </div>
   );

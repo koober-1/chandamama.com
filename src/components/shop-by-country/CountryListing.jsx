@@ -9,7 +9,13 @@ import CardSkeleton from '../skeleton/CardSkeleton'
 const CountryListing = () => {
     const router = useRouter()
     const dispatch = useDispatch()
-    const city = useSelector(state => state.City.city);
+    const city = useSelector(state => state.City?.city);
+    const setting = useSelector(state => state.Setting?.setting);
+
+    const effectiveLat =
+        city?.latitude || setting?.default_city?.latitude || 23.242;
+    const effectiveLng =
+        city?.longitude || setting?.default_city?.longitude || 69.6669;
 
     const countriesPerPage = 12;
     const [countries, setCountries] = useState([])
@@ -21,8 +27,8 @@ const CountryListing = () => {
             const response = await api.getCountries({
                 limit: countriesPerPage,
                 offset: 0,
-                latitude: city?.latitude,
-                longitude: city?.longitude
+                latitude: effectiveLat,
+                longitude: effectiveLng
             })
             console.log(response?.data);
             setCountries(response?.data);

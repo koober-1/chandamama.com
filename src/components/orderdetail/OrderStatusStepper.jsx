@@ -50,29 +50,29 @@ const OrderStepper = ({ orderDetail }) => {
   };
 
   return (
-    <div className="border rounded-md p-4 ">
+    <div className="bg-white rounded-3xl border border-slate-200/80 shadow-card p-6">
       {steps?.map((status, index) => (
-        <div key={index} className="flex items-start space-x-4 mb-12 last:mb-0">
+        <div key={index} className="flex items-start gap-4 mb-8 last:mb-0 relative">
           {/* Icon */}
-          <div className="relative">
-            <div className="w-12 h-12 flex items-center border-4 border-[#273F40] justify-center primaryBackColor  rounded-full">
+          <div className="relative shrink-0 flex flex-col items-center">
+            <div className="w-10 h-10 flex items-center justify-center bg-emerald-600 text-white rounded-full ring-4 ring-emerald-50 shadow-xs z-10">
               <Image
                 src={status?.icon?.src}
                 alt="icon"
-                height={24}
-                width={24}
-                className="h-2/3 w-full"
+                height={18}
+                width={18}
+                className="h-5 w-5 object-contain invert brightness-0"
               />
             </div>
             {index < steps.length - 1 && (
-              <div className="absolute top-12 left-1/2 w-2 h-20 md:h-28 lg:h-20 primaryBackColor transform -translate-x-1/2"></div>
+              <div className="w-0.5 h-12 bg-emerald-200/80 my-1"></div>
             )}
           </div>
 
           {/* Text Content */}
-          <div className="flex-1">
-            <p className="font-medium">{status.label}</p>
-            <p className="text-gray-500 text-sm">{status.timestamp}</p>
+          <div className="flex-1 pt-1.5 min-w-0">
+            <p className="font-semibold text-xs sm:text-sm text-slate-800 leading-snug">{status.label}</p>
+            <p className="text-slate-400 text-xs mt-0.5">{status.timestamp}</p>
           </div>
         </div>
       ))}

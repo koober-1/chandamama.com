@@ -301,39 +301,51 @@ const ForgetPasswordModal = ({
 
   return (
     <Dialog open={showForgetPassword}>
-      <DialogContent>
-        <DialogHeader className="flex justify-between items-center flex-row">
-          <h1 className="font-bold text-xl">{t("forget_password")}</h1>
-          <div className="closeButtonBg rounded-full p-[8px] cursor-pointer">
-            <RiCloseFill size={22} onClick={() => handleShowModal()} />
+      <DialogContent className="overflow-y-auto max-w-[440px] w-full p-6 sm:p-7 rounded-3xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-2xl">
+        <DialogHeader className="flex justify-between items-center flex-row pb-1">
+          <div className="flex items-center gap-2">
+            <span className="inline-block w-2.5 h-2.5 rounded-full bg-[#0BADFB]" />
+            <h1 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200">
+              {t("forget_password")}
+            </h1>
           </div>
+          <button
+            type="button"
+            aria-label="Close"
+            onClick={() => handleShowModal()}
+            className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 flex items-center justify-center transition-all cursor-pointer"
+          >
+            <RiCloseFill size={20} />
+          </button>
         </DialogHeader>
-        <div>
+
+        <div className="mt-1">
           {stage == 0 ? (
             <div className="flex flex-col w-full gap-4">
-              <div className="flex flex-col gap-1">
+              <div className="flex flex-col gap-1.5">
                 {isErrorMessage && (
-                  <p className="text-red-500 font-semibold text-sm">
+                  <p className="text-rose-500 font-semibold text-xs mb-1">
                     {t("forget_password_note")}
                   </p>
                 )}
                 {forgotPasswordType == "email" ? (
                   <>
-                    {" "}
-                    <label htmlFor="email" className="font-semibold">
-                      {t("email")}
-                      <span className="text-red-500">*</span>
+                    <label htmlFor="email" className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                      {t("email")} <span className="text-rose-500">*</span>
                     </label>
                     <input
                       type="email"
                       placeholder={t("emailPlaceholder")}
-                      className="p-2 cardBorder rounded-sm outline-none"
+                      className="w-full px-4 py-3 bg-slate-50/80 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 text-sm font-medium focus:bg-white dark:focus:bg-slate-800 focus:border-[#0BADFB] focus:ring-4 focus:ring-[#0BADFB]/15 outline-none transition-all duration-200"
                       value={email}
                       onChange={handleEmailChange}
                     />
                   </>
                 ) : (
                   <>
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                      {t("phone") || "Phone"} <span className="text-rose-500">*</span>
+                    </label>
                     <PhoneInput
                       inputStyle={{ direction: language?.type }}
                       country={defaultCountry}
@@ -353,97 +365,112 @@ const ForgetPasswordModal = ({
               </div>
               {forgotPasswordType == "email" ? (
                 <button
-                  className="primaryBackColor rounded-sm text-white font-medium text-base py-2 "
+                  className="w-full mt-2 bg-[#0BADFB] hover:bg-[#0298e0] active:scale-[0.99] disabled:opacity-60 text-white font-bold text-sm py-3 px-6 rounded-xl shadow-xs hover:shadow-md hover:shadow-[#0BADFB]/20 transition-all duration-200 cursor-pointer flex items-center justify-center gap-2"
                   onClick={handleForgetPassword}
                   disabled={loading}
                 >
-                  {loading ? t("loading") : t("get_mail")}
+                  {loading ? (
+                    <span className="flex items-center gap-2">
+                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                      {t("loading")}
+                    </span>
+                  ) : (
+                    t("get_mail")
+                  )}
                 </button>
               ) : (
                 <button
-                  className="primaryBackColor rounded-sm text-white font-medium text-base py-2 "
+                  className="w-full mt-2 bg-[#0BADFB] hover:bg-[#0298e0] active:scale-[0.99] disabled:opacity-60 text-white font-bold text-sm py-3 px-6 rounded-xl shadow-xs hover:shadow-md hover:shadow-[#0BADFB]/20 transition-all duration-200 cursor-pointer flex items-center justify-center gap-2"
                   onClick={verifyUser}
                   disabled={loading}
                 >
-                  {loading ? t("loading") : t("verify_user")}
+                  {loading ? (
+                    <span className="flex items-center gap-2">
+                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                      {t("loading")}
+                    </span>
+                  ) : (
+                    t("verify_user")
+                  )}
                 </button>
               )}
             </div>
           ) : (
-            <div className="flex flex-col w-full gap-4">
-              <div className="flex flex-col gap-2">
-                <div className="flex flex-col gap-1">
-                  <span className="font-bold text-base">
-                    {t("otp")}
-                    <span className="text-red-500">*</span>
-                  </span>
-                  <div className="">
-                    <input
-                      type="number"
-                      inputMode="numeric"
-                      pattern="\d*"
-                      className="py-2 px-4 cardBorder outline-none rounded-sm w-full"
-                      placeholder={t("otpPlaceholder")}
-                      value={otp}
-                      onChange={handleOtpChange}
-                      maxLength={6}
-                    />
-                  </div>
-                </div>
-                <div className="flex flex-col gap-1">
-                  <span className="font-bold text-base">
-                    {t("password")}
-                    <span className="text-red-500">*</span>
-                  </span>
-                  <div className="relative w-full ">
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      name=""
-                      id=""
-                      className="py-2 px-4 cardBorder outline-none rounded-sm w-full"
-                      placeholder={t("please_enter_password")}
-                      value={password}
-                      onChange={handlePasswordChange}
-                    />
-                    <span
-                      className="absolute right-3 top-3"
-                      onClick={handleShowPassword}
-                    >
-                      {showPassword ? <FaEyeSlash /> : <FaEye />}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex flex-col gap-1">
-                  <span className="font-bold text-base">
-                    {t("confirmPassword")}
-                    <span className="text-red-500">*</span>
-                  </span>
-                  <div className="relative w-full ">
-                    <input
-                      type={showConfirmPass ? "text" : "password"}
-                      name=""
-                      id=""
-                      className="py-2 px-4 cardBorder outline-none rounded-sm w-full"
-                      placeholder={t("please_enter_confirm_password")}
-                      value={confirmPassword}
-                      onChange={handleConfirmPasswordChange}
-                    />
-                    <span
-                      className="absolute right-3 top-3"
-                      onClick={handleShowConfirmPassword}
-                    >
-                      {showConfirmPass ? <FaEyeSlash /> : <FaEye />}
-                    </span>
-                  </div>
-                </div>
-                <button
-                  className="primaryBackColor rounded-sm text-white font-medium text-base py-2"
-                  onClick={handleResetPassword}
-                  disabled={loading}
-                >
-                  {loading ? t("loading") : t("reset_password")}
-                </button>
+            <div className="flex flex-col w-full gap-3.5">
+              <div className="flex flex-col gap-1.5">
+                <span className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                  {t("otp")} <span className="text-rose-500">*</span>
+                </span>
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  pattern="\d*"
+                  className="w-full px-4 py-3 bg-slate-50/80 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 text-sm font-medium focus:bg-white dark:focus:bg-slate-800 focus:border-[#0BADFB] focus:ring-4 focus:ring-[#0BADFB]/15 outline-none transition-all duration-200"
+                  placeholder={t("otpPlaceholder")}
+                  value={otp}
+                  onChange={handleOtpChange}
+                  maxLength={6}
+                />
               </div>
+
+              <div className="flex flex-col gap-1.5">
+                <span className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                  {t("password")} <span className="text-rose-500">*</span>
+                </span>
+                <div className="relative w-full">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    className="w-full pl-4 pr-11 py-3 bg-slate-50/80 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 text-sm font-medium focus:bg-white dark:focus:bg-slate-800 focus:border-[#0BADFB] focus:ring-4 focus:ring-[#0BADFB]/15 outline-none transition-all duration-200"
+                    placeholder={t("please_enter_password")}
+                    value={password}
+                    onChange={handlePasswordChange}
+                  />
+                  <button
+                    type="button"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 cursor-pointer transition-colors"
+                    onClick={handleShowPassword}
+                  >
+                    {showPassword ? <FaEyeSlash size={16} /> : <FaEye size={16} />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <span className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                  {t("confirmPassword")} <span className="text-rose-500">*</span>
+                </span>
+                <div className="relative w-full">
+                  <input
+                    type={showConfirmPass ? "text" : "password"}
+                    className="w-full pl-4 pr-11 py-3 bg-slate-50/80 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 text-sm font-medium focus:bg-white dark:focus:bg-slate-800 focus:border-[#0BADFB] focus:ring-4 focus:ring-[#0BADFB]/15 outline-none transition-all duration-200"
+                    placeholder={t("please_enter_confirm_password")}
+                    value={confirmPassword}
+                    onChange={handleConfirmPasswordChange}
+                  />
+                  <button
+                    type="button"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 cursor-pointer transition-colors"
+                    onClick={handleShowConfirmPassword}
+                  >
+                    {showConfirmPass ? <FaEyeSlash size={16} /> : <FaEye size={16} />}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                className="w-full mt-2 bg-[#0BADFB] hover:bg-[#0298e0] active:scale-[0.99] disabled:opacity-60 text-white font-bold text-sm py-3 px-6 rounded-xl shadow-xs hover:shadow-md hover:shadow-[#0BADFB]/20 transition-all duration-200 cursor-pointer flex items-center justify-center gap-2"
+                onClick={handleResetPassword}
+                disabled={loading}
+              >
+                {loading ? (
+                  <span className="flex items-center gap-2">
+                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                    {t("loading")}
+                  </span>
+                ) : (
+                  t("reset_password")
+                )}
+              </button>
             </div>
           )}
           <div id="recaptcha-container" style={{ display: "none" }}></div>

@@ -14,36 +14,34 @@ import { Nunito, Poppins } from 'next/font/google';
 
 const nunito = Nunito({
   subsets: ['latin'],
-  weight: ['200','300','400','500','600','700','800','900'],
+  weight: ['200', '300', '400', '500', '600', '700', '800', '900'],
   variable: '--font-family',
   display: 'swap',
 });
-
-// const poppins = Poppins({
-//   subsets: ['latin'],
-//   weight: ['300','400','500','600','700','800','900'],
-//   variable: '--font-heading',
-//   display: 'swap',
-// });
 
 const queryClient = new QueryClient();
 
 function AppContent({ Component, pageProps }) {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
   const selectedLanguage = useSelector(
     (state) => state.Language.selectedLanguage
   );
 
+  const [pageLoading, setPageLoading] = useState(false);
+
   useEffect(() => {
-    const handleStart = () => setLoading(true);
-    const handleComplete = () => setLoading(false);
+    const handleStart = (url) => {
+      // Don't show loader for shallow routing
+      if (url !== router.asPath) {
+        setPageLoading(true);
+      }
+    };
+    const handleComplete = () => setPageLoading(false);
 
     router.events.on("routeChangeStart", handleStart);
     router.events.on("routeChangeComplete", handleComplete);
     router.events.on("routeChangeError", handleComplete);
 
-    // Cleanup event listeners
     return () => {
       router.events.off("routeChangeStart", handleStart);
       router.events.off("routeChangeComplete", handleComplete);
@@ -53,7 +51,7 @@ function AppContent({ Component, pageProps }) {
 
   return (
     <>
-      {loading && <Loader screen="full" />}
+      {pageLoading && <Loader screen="full" />}
       <Component {...pageProps} />
     </>
   );

@@ -7,6 +7,7 @@ import { toast } from 'react-toastify';
 import ImageWithPlaceholder from '../image-with-placeholder/ImageWithPlaceholder';
 import { t } from '@/utils/translation';
 import { FiMinus, FiPlus } from 'react-icons/fi';
+import { getVariantColorData } from '@/lib/utils';
 
 
 const CartDrawerProductsCard = ({ product, cartProductsData, setCartProductsData }) => {
@@ -242,48 +243,98 @@ const CartDrawerProductsCard = ({ product, cartProductsData, setCartProductsData
 
 
 
+    const colorData = getVariantColorData(product) || getVariantColorData(product?.product_variant) || getVariantColorData(product?.variant);
+
     return (
-        <div>
-            <div className='grid grid-cols-12 p-2 cardBorder mx-2 my-1 gap-2 rounded-sm '>
-                <div className='col-span-4 '>
-                    <div className='h-[105.66px] sm:h-full w-full object-cover aspect-square relative'>
-                        <ImageWithPlaceholder src={product?.image_url} alt='Image' fill sizes="(max-width: 640px) 60vw,(max-width: 1024px) 25vw,25vw" className='h-full w-full object-cover' />
+        <div className="bg-white border border-slate-100 hover:border-slate-200/80 shadow-subtle hover:shadow-card transition-all p-3 rounded-2xl flex gap-3.5 relative group">
+            {/* Thumbnail */}
+            <div className="w-20 h-20 rounded-xl overflow-hidden bg-slate-50 border border-slate-100 shrink-0 relative">
+                <ImageWithPlaceholder
+                    src={product?.image_url}
+                    alt={product?.product?.translations?.name || 'Product'}
+                    fill
+                    sizes="(max-width: 640px) 80px, 80px"
+                    className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+            </div>
+
+            {/* Details */}
+            <div className="flex-1 flex flex-col justify-between min-w-0">
+                <div className="flex items-start justify-between gap-2">
+                    <h4 className="text-xs font-semibold text-slate-900 truncate">
+                        {product?.product?.translations?.name || product?.name}
+                    </h4>
+                    <button
+                        type="button"
+                        aria-label="Remove item"
+                        onClick={handleRemoveItem}
+                        className="w-6 h-6 rounded-full hover:bg-rose-50 text-slate-400 hover:text-rose-500 flex items-center justify-center transition-colors shrink-0 -mt-0.5 -mr-1"
+                    >
+                        <IoClose size={16} />
+                    </button>
+                </div>
+
+                <div className="my-1 flex items-center gap-1.5 flex-wrap">
+                    <span className="text-[11px] font-medium text-slate-500 bg-slate-100/80 px-2 py-0.5 rounded-full inline-flex items-center">
+                        {product?.measurement} {product?.unit?.translations?.short_code || product?.unit_code || ""}
+                    </span>
+                    {colorData?.name && (
+                        <span className="text-[11px] font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-full inline-flex items-center gap-1 border border-slate-200/60">
+                            {colorData.hex && (
+                                <span
+                                    className="w-2.5 h-2.5 rounded-full border border-slate-300 shadow-2xs shrink-0 inline-block"
+                                    style={{ backgroundColor: colorData.hex }}
+                                />
+                            )}
+                            <span>{colorData.name}</span>
+                        </span>
+                    )}
+                </div>
+
+                <div className="flex items-center justify-between gap-2 pt-1 border-t border-slate-50">
+                    {/* Stepper */}
+                    <div className="flex items-center border border-slate-200 rounded-full bg-slate-50/80 px-1 py-0.5 text-xs text-slate-700 shadow-inner">
+                        <button
+                            type="button"
+                            aria-label="Decrease quantity"
+                            className="w-6 h-6 rounded-full hover:bg-white text-slate-600 hover:text-slate-900 flex items-center justify-center transition-all disabled:opacity-40"
+                            onClick={handleQuantityDecrease}
+                        >
+                            <FiMinus size={13} />
+                        </button>
+                        <span className="w-7 text-center font-semibold text-xs text-slate-800">
+                            {addedQuantity}
+                        </span>
+                        <button
+                            type="button"
+                            aria-label="Increase quantity"
+                            className="w-6 h-6 rounded-full hover:bg-white text-slate-600 hover:text-slate-900 flex items-center justify-center transition-all"
+                            onClick={() => handleQuantityIncrease()}
+                        >
+                            <FiPlus size={13} />
+                        </button>
+                    </div>
+
+                    {/* Price */}
+                    <div className="flex items-baseline gap-1.5 shrink-0">
+                        {product?.discounted_price != 0 && product?.discounted_price !== product?.price ? (
+                            <>
+                                <span className="text-xs font-bold text-slate-900 whitespace-nowrap">
+                                    {setting?.currency}{product?.discounted_price}
+                                </span>
+                                <span className="text-[11px] font-normal line-through text-slate-400 whitespace-nowrap">
+                                    {setting?.currency}{product?.price}
+                                </span>
+                            </>
+                        ) : (
+                            <span className="text-xs font-bold text-slate-900 whitespace-nowrap">
+                                {setting?.currency}{product?.price}
+                            </span>
+                        )}
                     </div>
                 </div>
-                <div className='col-span-8'>
-                    <div className='flex flex-col justify-between h-full'>
-                        <div className="flex items-center justify-between">
-                            <h2 className="text-base font-bold whitespace-nowrap overflow-hidden text-ellipsis w-[80%]">
-                                {product?.product?.translations?.name}
-                            </h2>
-                            <IoClose size={20} onClick={handleRemoveItem} />
-                        </div>
-
-                        <div className='mt-2'>
-                            <span className='flex items-center gap-1'>{product?.measurement} {product?.unit?.translations?.short_code}</span>
-                        </div>
-                        <div className='flex justify-between items-center mt-3 md:mt-4'>
-                            <div className='flex border-2 items-center leading-5 w-1/2 justify-between p-1 rounded-sm'>
-                                <button className='text-2xl font-bold px-1' onClick={handleQuantityDecrease}><FiMinus size={20} /></button>
-                                <span className='w-full text-center'>{addedQuantity}</span>
-                                <button className='text-2xl font-bold px-1' onClick={() => handleQuantityIncrease()}><FiPlus size={20} /></button>
-                            </div>
-
-                            <div className='flex flex-col sm:flex-row gap-1 items-start sm:items-center'>
-                                {product?.discounted_price != 0 && product?.discounted_price !== product?.price ? (
-                                    <>
-                                        <h2 className='text-base font-bold whitespace-nowrap'>{setting?.currency}{product?.discounted_price}</h2>
-                                        <p className='text-sm font-normal line-through whitespace-nowrap opacity-50'>{setting?.currency} {product?.price}</p>
-                                    </>
-                                ) : (
-                                    <h2 className='text-base font-bold whitespace-nowrap '>{setting?.currency} {product?.price}</h2>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div >
-        </div >
+            </div>
+        </div>
     )
 }
 

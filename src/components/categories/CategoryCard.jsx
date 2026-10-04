@@ -1,29 +1,25 @@
 import React from "react";
 import ImageWithPlaceholder from "../image-with-placeholder/ImageWithPlaceholder";
 
-const CategoryCard = ({ category, imageSize, padding }) => {
+const CategoryCard = ({ category }) => {
   return (
-    <div className="flex flex-col category-card border border-transparent hover:textPrimaryColor hover:cardBorder rounded-xl categoryCardBackground cursor-pointer " style={{ padding }}>
-      <div className="gap-3 flex flex-col items-center">
-        <div
-          className="relative"
-          style={{
-            width: imageSize,
-            height: imageSize,
-          }}
-        >
+    <div className="group flex flex-col items-center cursor-pointer w-full text-center">
+      {/* CHANDAMAMA Official White Card Box */}
+      <div className="w-full aspect-[4/3] sm:aspect-square rounded-2xl bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 hover:border-[#0BADFB] p-4 sm:p-6 flex items-center justify-center transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-md relative overflow-hidden">
+        <div className="w-full h-full relative flex items-center justify-center">
           <ImageWithPlaceholder
             src={category.image_url}
             width={300}
             height={300}
-            alt="Category Image"
-            className="rounded-full w-full h-full object-cover p-2"
+            alt={category?.translations?.name ?? category?.name ?? "Category"}
+            className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
           />
         </div>
-        <div className="font-semibold h-[42px] leading-5 mt-2 text-center w-full line-clamp-2">
-          {category?.translations?.name ?? category?.name}
-        </div>
       </div>
+      {/* Category Name Underneath Card in Bold Uppercase */}
+      <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white group-hover:text-[#0BADFB] transition-colors mt-3 uppercase tracking-wider line-clamp-1 w-full text-center">
+        {category?.translations?.name ?? category?.name}
+      </h3>
     </div>
   );
 };

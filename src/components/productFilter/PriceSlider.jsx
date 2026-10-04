@@ -44,12 +44,12 @@ const PriceSlider = ({
               setMaxShowTooltips(false);
             }}
           >
-            <Slider.Track className="relative h-[15px] w-full grow rounded-full bg-white border border-gray-200">
-              <Slider.Range className="absolute h-full rounded-full bg-green-600" />
+            <Slider.Track className="relative h-[15px] w-full grow rounded-full bg-slate-100 border border-slate-200">
+              <Slider.Range className="absolute h-full rounded-full bg-[#0BADFB]" />
             </Slider.Track>
 
             <Slider.Thumb
-              className="w-[25px] h-[25px] absolute top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full primaryBackColor border-4 border-white drop-shadow-md focus:outline-none cursor-pointer group"
+              className="w-[25px] h-[25px] absolute top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#0BADFB] border-4 border-white drop-shadow-md focus:outline-none cursor-pointer group"
               onMouseEnter={() => setMinShowTooltips(true)}
               onMouseLeave={() => setMinShowTooltips(false)}
               onFocus={() => setMinShowTooltips(true)}
@@ -65,7 +65,7 @@ const PriceSlider = ({
             </Slider.Thumb>
 
             <Slider.Thumb
-              className="w-[25px] h-[25px] absolute top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full primaryBackColor border-4 border-white drop-shadow-md focus:outline-none cursor-pointer group"
+              className="w-[25px] h-[25px] absolute top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#0BADFB] border-4 border-white drop-shadow-md focus:outline-none cursor-pointer group"
               onMouseEnter={() => setMaxShowTooltips(true)}
               onMouseLeave={() => setMaxShowTooltips(false)}
               onFocus={() => setMaxShowTooltips(true)}

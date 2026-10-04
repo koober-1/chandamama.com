@@ -48,100 +48,103 @@ const ResetPassword = () => {
     }
 
     return (
-        <div className="w-full mx-auto h-fit border-2   rounded-lg   ">
-            <div className='w-full backgroundColor'>
-                <h2 className="text-2xl font-semibold  p-4">{t("resetPassword")}</h2>
+        <div className="w-full bg-white rounded-3xl border border-slate-200/80 shadow-card overflow-hidden">
+            <div className='bg-slate-50/70 border-b border-slate-100 p-5 md:p-6'>
+                <h2 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">{t("resetPassword")}</h2>
+                <p className="text-xs text-slate-500 mt-0.5">Ensure your account is using a long, random password to stay secure</p>
             </div>
-            <div className='  items-center flex  flex-col py-12'>
-                <form className='w-[90%] md:w-1/2' onSubmit={handleResetPassword}>
-                    <div>
-                        <div className="mb-4 relative">
+            <div className='flex justify-center py-10 md:py-14 px-4'>
+                <form className='w-full max-w-md' onSubmit={handleResetPassword}>
+                    <div className="space-y-5">
+                        <div className="relative">
                             <label
-                                htmlFor="name"
-                                className="block text-sm font-medium "
+                                htmlFor="password"
+                                className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1"
                             >
-                                {t("password")} <span className="text-red-500">*</span>
+                                {t("password")} <span className="text-rose-500">*</span>
                             </label>
                             <input
                                 type={showPassword ? "text" : "password"}
-                                id="name"
-                                name="name"
+                                id="password"
+                                name="password"
                                 placeholder={t("please_enter_password")}
-                                className="mt-1 block w-full rounded-md cardBorder py-2 px-4 disabled:text-gray-400"
+                                className="w-full rounded-xl border border-slate-200 focus:outline-none focus:border-[#0BADFB] focus:ring-1 focus:ring-[#0BADFB] py-2.5 px-4 text-sm text-slate-800 bg-slate-50/50 transition-all"
                                 required
-                                value={password}
+                                value={password || ""}
                                 onChange={(e) => setPassword(e.target.value)}
                             />
-                            <div
-                                className={`absolute ${rtl ? "left-[12px]" : "right-[12px]"} top-[36px]`}
+                            <button
+                                type="button"
+                                className={`absolute ${rtl ? "left-3" : "right-3"} top-[34px] text-slate-400 hover:text-slate-600 p-1`}
                                 onClick={() => setShowPassword(!showPassword)}
                             >
-                                {showPassword ? <FaRegEyeSlash /> : <FaRegEye />}
-                            </div>
+                                {showPassword ? <FaRegEyeSlash size={16} /> : <FaRegEye size={16} />}
+                            </button>
                         </div>
-                        <div className="mb-4 relative">
+
+                        <div className="relative">
                             <label
-                                htmlFor="name"
-                                className="block text-sm font-medium "
+                                htmlFor="newPassword"
+                                className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1"
                             >
-                                {t("newPassword")} <span className="text-red-500">*</span>
+                                {t("newPassword")} <span className="text-rose-500">*</span>
                             </label>
                             <input
                                 type={showNewPassword ? "text" : "password"}
-                                id="name"
-                                name="name"
+                                id="newPassword"
+                                name="newPassword"
                                 placeholder={t("please_enter_new_password")}
-                                className="mt-1 block w-full rounded-md cardBorder py-2 px-4 disabled:text-gray-400"
+                                className="w-full rounded-xl border border-slate-200 focus:outline-none focus:border-[#0BADFB] focus:ring-1 focus:ring-[#0BADFB] py-2.5 px-4 text-sm text-slate-800 bg-slate-50/50 transition-all"
                                 required
-                                value={newPassword}
+                                value={newPassword || ""}
                                 onChange={(e) => setNewPassword(e.target.value)}
                             />
-                            <div
-                                className={`absolute ${rtl ? "left-[12px]" : "right-[12px]"} top-[36px]`}
+                            <button
+                                type="button"
+                                className={`absolute ${rtl ? "left-3" : "right-3"} top-[34px] text-slate-400 hover:text-slate-600 p-1`}
                                 onClick={() => setShowNewPassword(!showNewPassword)}
                             >
-                                {showNewPassword ? <FaRegEyeSlash /> : <FaRegEye />}
-                            </div>
+                                {showNewPassword ? <FaRegEyeSlash size={16} /> : <FaRegEye size={16} />}
+                            </button>
                         </div>
-                        <div className="mb-4 relative">
+
+                        <div className="relative">
                             <label
-                                htmlFor="name"
-                                className="block text-sm font-medium "
+                                htmlFor="confirmPassword"
+                                className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1"
                             >
-                                {t("confirmPassword")} <span className="text-red-500">*</span>
+                                {t("confirmPassword")} <span className="text-rose-500">*</span>
                             </label>
                             <input
                                 type={showConfirmPassword ? "text" : "password"}
-                                id="name"
-                                name="name"
+                                id="confirmPassword"
+                                name="confirmPassword"
                                 placeholder={t("please_enter_confirm_password")}
-                                className="mt-1 block w-full rounded-md cardBorder py-2 px-4 disabled:text-gray-400"
+                                className="w-full rounded-xl border border-slate-200 focus:outline-none focus:border-[#0BADFB] focus:ring-1 focus:ring-[#0BADFB] py-2.5 px-4 text-sm text-slate-800 bg-slate-50/50 transition-all"
                                 required
-                                value={confirmPassword}
+                                value={confirmPassword || ""}
                                 onChange={(e) => setConfirmPassword(e.target.value)}
                             />
-                            <div
-                                className={`absolute ${rtl ? "left-[12px]" : "right-[12px]"} top-[36px]`}
+                            <button
+                                type="button"
+                                className={`absolute ${rtl ? "left-3" : "right-3"} top-[34px] text-slate-400 hover:text-slate-600 p-1`}
                                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                             >
-                                {showConfirmPassword ? <FaRegEyeSlash /> : <FaRegEye />}
-                            </div>
+                                {showConfirmPassword ? <FaRegEyeSlash size={16} /> : <FaRegEye size={16} />}
+                            </button>
                         </div>
-                        <div className="mt-6 flex justify-end w-full">
+
+                        <div className="pt-2">
                             <button
                                 type="submit"
-                                className="w-44 bg-[#29363f]  text-white py-2 px-4 rounded-md "
-                            // disabled={isChanged == false}
-
+                                className="w-full py-3 rounded-full bg-[#0BADFB] hover:bg-[#0298e0] text-white font-semibold text-sm shadow-md shadow-[#0BADFB]/20 transition-all hover:scale-[1.01] active:scale-[0.99]"
                             >
                                 {t("change_password")}
                             </button>
                         </div>
                     </div>
                 </form>
-
             </div>
-
         </div>
     )
 }

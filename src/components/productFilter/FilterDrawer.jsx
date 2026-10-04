@@ -56,7 +56,7 @@ const FilterDrawer = ({
             setMaxPrice={setMaxPrice}
             setMinPrice={setMinPrice}
             setShowFilter={setShowFilter}
-            hideCategory={listing_source === "category"}
+            hideCategory={false}
           />
         </div>
       </SheetContent>

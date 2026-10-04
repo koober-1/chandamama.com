@@ -10,10 +10,10 @@ const FinalCheckoutSummary = ({ orderDetail }) => {
   const [activeTooltip, setActiveTooltip] = useState(null);
   const [message, setMessage] = useState("");
   return (
-    <div className="max-w-md p-6 rounded-md border cartBorder ">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg  font-medium">{t("payment_method")}</h2>
-        <span className="font-semibold">{orderDetail?.payment_method}</span>
+    <div className="w-full bg-white rounded-3xl border border-slate-200/80 shadow-card p-6">
+      <div className="flex justify-between items-center pb-4 mb-4 border-b border-slate-100">
+        <span className="text-xs font-bold uppercase tracking-wider text-slate-400">{t("payment_method")}</span>
+        <span className="px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-800 border border-slate-200/60">{orderDetail?.payment_method}</span>
       </div>
 
       <div className="space-y-4">
@@ -113,12 +113,12 @@ const FinalCheckoutSummary = ({ orderDetail }) => {
             </div>
           )}
 
-          <div className="pt-4 border-t ">
+          <div className="pt-4 border-t border-slate-100 mt-2">
             <div className="flex justify-between items-center">
-              <span className="font-bold text-base">
+              <span className="font-bold text-base text-slate-900">
                 {t("total")} {t("amount")}
               </span>
-              <span className="text-green-600 font-bold">
+              <span className="text-xl font-bold text-emerald-600">
                 {setting?.currency}
                 {Number(orderDetail?.remaining_final)}
               </span>

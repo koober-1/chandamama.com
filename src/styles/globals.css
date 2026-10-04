@@ -3,37 +3,38 @@
 @tailwind utilities;
 
 :root {
-  --body-background-color: #fff;
-  --primary-color: #55ae7b;
-  --border-color: #d8e0e6;
-  --font-color: #141a1f;
-  --light-primary-color: #C8E5D5;
-  --footer-background-color: #141a1f;
-  --icons-background-color: #c8e5d530;
-  --button-background-color: #f3f5f7;
-  --font-family: "Nunito", sans-serif;
-  --swiper-background-color: #f2f5f7;
-  --button-border-color: #8ba2b3;
+  --body-background-color: #ffffff;
+  --primary-color: #0BADFB;
+  --border-color: #e2e8f0;
+  --font-color: #0f172a;
+  --light-primary-color: #e0f7fe;
+  --secondary-yellow-color: #FDD811;
+  --footer-background-color: #0f172a;
+  --icons-background-color: #e0f7fe;
+  --button-background-color: #f8fafc;
+  --font-family: "Plus Jakarta Sans", "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --swiper-background-color: #f8fafc;
+  --button-border-color: #e2e8f0;
   /* --cart-button-bg: #55ae7b26; */
-  --bs-body-bg: #fff;
-  --shimmer-highlight-color: #dddddd;
-  --brand-bg-color: #F2F5F7;
-  --category-card-bg: #fff;
-  --nav-button-bg: #8BA2B3;
-  --sub-text-color: #595F65;
-  --secondary-text-color:rgba(20, 26, 31, 0.66);  
-  --short-description-text-color:#5C788C;
-  --order-status-payment-pending-color:#e3aa0e;
-  --order-status-recieved:#319795;
-  --order-status-in-process-color:#e3aa0e;
-  --order-status-processed:#805AD5;
-  --order-status-shipped:#3182CE;
-  --order-status-out_for_delivery:#2D3748;
-  --order-status-delivered:#2D3748;
-  --order-status-cancelled:#db3232;
-  --order-status-returned:#458ae6;
-  --order-status-ready_to_pickup:#458ae6;
-  --order-status-picked:#59AC77;
+  --bs-body-bg: #ffffff;
+  --shimmer-highlight-color: #f1f5f9;
+  --brand-bg-color: #f8fafc;
+  --category-card-bg: #ffffff;
+  --nav-button-bg: #64748b;
+  --sub-text-color: #64748b;
+  --secondary-text-color: #475569;  
+  --short-description-text-color: #64748b;
+  --order-status-payment-pending-color: #d97706;
+  --order-status-recieved: #0d9488;
+  --order-status-in-process-color: #d97706;
+  --order-status-processed: #7c3aed;
+  --order-status-shipped: #2563eb;
+  --order-status-out_for_delivery: #334155;
+  --order-status-delivered: #0BADFB;
+  --order-status-cancelled: #dc2626;
+  --order-status-returned: #2563eb;
+  --order-status-ready_to_pickup: #2563eb;
+  --order-status-picked: #0BADFB;
 }
 
 .dark {
@@ -41,7 +42,7 @@
   --category-card-bg: #000;
   --body-background-color: #141414;
   --button-background-color: #141414;
-  --primary-color: #55ae7b;
+  --primary-color: #38BDF8;
   --sub-text-color: #8b8b8b;
   --second-cards-color: #202934;
   --text-field-color: white;
@@ -178,9 +179,16 @@
   }
 
   .headerSearch {
-    border-radius: 5px;
-    box-shadow: 0 0 3px gray;
-    height: 50px;
+    border-radius: 9999px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+    height: 46px;
+    transition: all 0.2s ease-in-out;
+  }
+
+  .headerSearch:focus-within {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(0, 173, 187, 0.15);
   }
 
   .buttonBackground {
@@ -359,9 +367,37 @@
     @apply py-6 md:py-12 px-2;
   }
 
-  /* .promotion-image{
-    @apply 
-  } */
+  /* Premium card utility shadow */
+  .shadow-card {
+    box-shadow: 0 2px 12px 0 rgba(0,0,0,0.07), 0 1px 3px 0 rgba(0,0,0,0.04);
+  }
+
+  .shadow-dropdown {
+    box-shadow: 0 8px 24px 0 rgba(0,0,0,0.10), 0 2px 6px 0 rgba(0,0,0,0.06);
+  }
+
+  .shadow-subtle {
+    box-shadow: 0 1px 3px 0 rgba(0,0,0,0.06), 0 1px 2px 0 rgba(0,0,0,0.04);
+  }
+
+  /* Brand primary & yellow utility classes */
+  .brand-primary {
+    background-color: #0BADFB;
+  }
+  .brand-primary-text {
+    color: #0BADFB;
+  }
+  .brand-yellow {
+    background-color: #FDD811;
+  }
+  .brand-yellow-text {
+    color: #FDD811;
+  }
+
+  /* Scale utility for active states */
+  .active\:scale-98:active {
+    transform: scale(0.98);
+  }
 }
 
 

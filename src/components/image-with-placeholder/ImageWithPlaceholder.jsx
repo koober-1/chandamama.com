@@ -29,7 +29,7 @@ const ImageWithPlaceholder = ({
             : ImagePlaceholder
           : src
       }
-      alt={alt}
+      alt={alt || "image"}
       {...(width && height
         ? { width, height }
         : {fill: true, sizes: sizes || "100vw" })}

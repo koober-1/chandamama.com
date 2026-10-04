@@ -50,15 +50,32 @@ const CheckoutPayment = ({ checkoutData }) => {
     }
   }, [user]);
 
-  const handleSelectedPaymentMethod = (value) => {
-    dispatch(setPaymentMethod({ data: value }));
-  };
+  const isCodAllowed =
+    checkoutData?.cod_allowed == "1" ||
+    checkoutData?.cod_allowed == 1 ||
+    checkoutData?.cod_allowed === undefined ||
+    checkoutData?.cod_allowed === null;
 
   const enabledPaymentMethods = paymentMethodsConfig.filter(
     (method) =>
       setting?.payment_setting?.[method.key] &&
-      setting?.payment_setting?.[method.key] === "1"
+      (setting?.payment_setting?.[method.key] == "1" ||
+        setting?.payment_setting?.[method.key] == 1)
   );
+
+  useEffect(() => {
+    if (!checkout?.selectedPaymentMethod) {
+      if (isCodAllowed || enabledPaymentMethods.length === 0) {
+        dispatch(setPaymentMethod({ data: "COD" }));
+      } else if (enabledPaymentMethods.length > 0) {
+        dispatch(setPaymentMethod({ data: enabledPaymentMethods[0].label }));
+      }
+    }
+  }, [checkoutData, checkout?.selectedPaymentMethod, isCodAllowed, enabledPaymentMethods]);
+
+  const handleSelectedPaymentMethod = (value) => {
+    dispatch(setPaymentMethod({ data: value }));
+  };
 
   // Function to find the selected method element
   const scrollToSelectedMethod = () => {
@@ -113,37 +130,38 @@ const CheckoutPayment = ({ checkoutData }) => {
   };
 
   return (
-    <div>
-      <div className="flex flex-col cardBorder rounded-sm w-full">
-        <div className="flex justify-between backgroundColor p-4">
-          <span className="font-bold text-xl">
+    <div className="w-full">
+      <div className="flex flex-col bg-white border border-slate-200/80 rounded-3xl shadow-card overflow-hidden">
+        <div className="flex justify-between items-center bg-slate-50/80 px-6 py-4 border-b border-slate-100">
+          <span className="font-extrabold text-lg text-slate-900 tracking-tight">
             {t("choose_payment_method")}
           </span>
         </div>
-        <div className="p-4 flex flex-col gap-2">
+        <div className="p-6 flex flex-col gap-5">
           {user?.user?.balance >= 1 && (
-            <div className="flex flex-col gap-3 mb-3">
-              <div className="flex justify-between">
-                <p className="text-base font-bold">{t("your_wallet")}</p>
-                <div className="flex gap-2 items-center">
+            <div className="flex flex-col gap-3 bg-[#e0f7fe]/40 border border-[#0BADFB]/30 rounded-2xl p-4">
+              <div className="flex justify-between items-center">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#0BADFB]">
+                  {t("your_wallet")}
+                </span>
+                <label className="flex gap-2 items-center cursor-pointer text-xs font-bold text-[#0BADFB]">
                   <input
                     type="checkbox"
-                    className="h-4 w-4"
+                    className="h-4 w-4 text-[#0BADFB] focus:ring-[#0BADFB] rounded border-slate-300"
                     onChange={handleWalletCheck}
                     checked={checkout?.isWalletChecked}
                   />
-                  <p>{t("use_wallet_balance")}</p>
-                </div>
+                  <span>{t("use_wallet_balance")}</span>
+                </label>
               </div>
-              <div className="rounded backgroundColor flex justify-between items-center p-2">
-                <div className="flex gap-4 items-center font-medium text-base">
-                  <CiWallet
-                    size={40}
-                    className="addToCartColor p-1 rounded-sm"
-                  />
-                  {t("walletBalance")}
+              <div className="bg-white rounded-xl border border-[#0BADFB]/20 flex justify-between items-center p-3">
+                <div className="flex gap-3 items-center font-bold text-xs text-slate-800">
+                  <div className="w-9 h-9 rounded-full bg-[#e0f7fe] text-[#0BADFB] flex items-center justify-center">
+                    <CiWallet size={22} />
+                  </div>
+                  <span>{t("walletBalance")}</span>
                 </div>
-                <div className="font-bold text-xl">
+                <div className="font-extrabold text-lg text-[#0BADFB]">
                   {setting?.setting?.currency}
                   {walletBalance?.toFixed(
                     setting?.decimal_point ? setting?.decimal_point : 0
@@ -152,90 +170,98 @@ const CheckoutPayment = ({ checkoutData }) => {
               </div>
             </div>
           )}
-          {checkout?.selectedPaymentMethod == "wallet" ? (
-            <></>
-          ) : (
-            <div className="flex flex-col gap-3">
-              <h1 className="text-base font-bold">{t("payment_method")}</h1>
+
+          {checkout?.selectedPaymentMethod == "wallet" ? null : (
+            <div className="flex flex-col gap-4">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                {t("payment_method")}
+              </h2>
               <div
                 ref={methodsContainerRef}
-                className="flex flex-col gap-2 h-full"
+                className="grid grid-cols-1 sm:grid-cols-2 gap-3"
               >
-                {checkoutData?.cod_allowed == "1" && (
+                {(isCodAllowed || enabledPaymentMethods.length === 0) && (
                   <div
                     data-method="COD"
-                    className={`p-2 flex justify-between items-center cardBorder rounded-sm ${
-                      checkout?.selectedPaymentMethod === "COD"
-                        ? "addToCartColor"
-                        : ""
+                    className={`p-4 flex justify-between items-center rounded-2xl border transition-all cursor-pointer ${
+                      checkout?.selectedPaymentMethod === "COD" || !checkout?.selectedPaymentMethod
+                        ? "border-[#0BADFB] bg-[#e0f7fe]/40 ring-2 ring-[#0BADFB]/20 shadow-xs"
+                        : "border-slate-200 hover:border-slate-300 bg-white"
                     }`}
-                    onClick={()=>{handleSelectedPaymentMethod("COD")}}
+                    onClick={() => handleSelectedPaymentMethod("COD")}
                   >
-                    <div className="flex gap-2 items-center">
-                      <Image
-                        src={CashOnDeliveryImage}
-                        className="h-8 w-8"
-                        height={32}
-                        width={32}
-                        unoptimized
-                        alt={t("cod")}
-                      />
-                      <p className="font-medium text-base">
-                        {t("cash_on_delivery")}
-                      </p>
+                    <div className="flex gap-3 items-center">
+                      <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center p-1.5 flex-shrink-0">
+                        <Image
+                          src={CashOnDeliveryImage}
+                          className="h-full w-full object-contain"
+                          height={32}
+                          width={32}
+                          unoptimized
+                          alt={t("cod")}
+                        />
+                      </div>
+                      <span className="font-bold text-xs text-slate-800">
+                        {t("cash_on_delivery") || "Cash on Delivery"}
+                      </span>
                     </div>
                     <div>
                       <input
                         type="radio"
                         name="payment_method"
-                        className="h-6 w-6 mt-2"
+                        className="h-4 w-4 text-[#0BADFB] focus:ring-[#0BADFB] border-slate-300"
                         onChange={() => handleSelectedPaymentMethod("COD")}
-                        checked={checkout?.selectedPaymentMethod === "COD"}
+                        checked={checkout?.selectedPaymentMethod === "COD" || !checkout?.selectedPaymentMethod}
                       />
                     </div>
                   </div>
                 )}
-                {enabledPaymentMethods.map((method) => (
-                  <div
-                    key={method.key}
-                    data-method={method.label}
-                    className={`p-2 flex justify-between items-center cardBorder rounded-sm ${
-                      checkout?.selectedPaymentMethod === method.label
-                        ? "addToCartColor"
-                        : ""
-                    }`}
-                    onClick={()=>{handleSelectedPaymentMethod(method.label)}}
-                  >
-                    <div className="flex gap-2 items-center">
-                      <Image
-                        src={method.image}
-                        className="h-8 w-8"
-                        height={32}
-                        width={32}
-                        unoptimized
-                        alt={t(method.label)}
-                      />
-                      <p className="font-medium text-base">{t(method.label)}</p>
+                {enabledPaymentMethods.map((method) => {
+                  const isSelected = checkout?.selectedPaymentMethod === method.label;
+                  return (
+                    <div
+                      key={method.key}
+                      data-method={method.label}
+                      className={`p-4 flex justify-between items-center rounded-2xl border transition-all cursor-pointer ${
+                        isSelected
+                          ? "border-[#0BADFB] bg-[#e0f7fe]/40 ring-2 ring-[#0BADFB]/20 shadow-xs"
+                          : "border-slate-200 hover:border-slate-300 bg-white"
+                      }`}
+                      onClick={() => handleSelectedPaymentMethod(method.label)}
+                    >
+                      <div className="flex gap-3 items-center">
+                        <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center p-1.5 flex-shrink-0">
+                          <Image
+                            src={method.image}
+                            className="h-full w-full object-contain"
+                            height={32}
+                            width={32}
+                            unoptimized
+                            alt={t(method.label)}
+                          />
+                        </div>
+                        <span className="font-bold text-xs text-slate-800 capitalize">
+                          {t(method.label)}
+                        </span>
+                      </div>
+                      <div>
+                        <input
+                          type="radio"
+                          name="payment_method"
+                          className="h-4 w-4 text-[#0BADFB] focus:ring-[#0BADFB] border-slate-300"
+                          onChange={() => handleSelectedPaymentMethod(method.label)}
+                          checked={isSelected}
+                        />
+                      </div>
                     </div>
-                    <div>
-                      <input
-                        type="radio"
-                        name="payment_method"
-                        className="h-6 w-6 mt-2"
-                        onChange={() =>
-                          handleSelectedPaymentMethod(method.label)
-                        }
-                        checked={
-                          checkout?.selectedPaymentMethod === method.label
-                        }
-                      />
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
-              <div className="flex justify-end gap-4">
+
+              <div className="flex justify-start pt-3">
                 <button
-                  className="cardBorder px-4 py-2 rounded-sm text-xl font-normal"
+                  type="button"
+                  className="px-6 py-2.5 rounded-full border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold text-xs transition-colors"
                   onClick={() => handelPrevStep()}
                 >
                   {t("previous")}

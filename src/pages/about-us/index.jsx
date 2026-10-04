@@ -86,8 +86,8 @@ const Index = ({
     <div>
       <MetaData
         pageName="/about"
-        title={title}
-        description={description}
+        title={title || "About Us - Chandamama | Multi-Category Online Store"}
+        description={description || "Discover Chandamama, your one-stop online destination for toys, sports, home & kitchen essentials, and daily utilities from small to big."}
         keywords={keywords}
         structuredData={schemaMarkup}
         ogImage={ogImage}

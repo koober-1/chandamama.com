@@ -1,6 +1,6 @@
 "use client";
 import react, { useEffect, useRef, useState } from "react";
-import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import Image from "next/image";
 import { t } from "@/utils/translation";
 import PhoneInput from "react-phone-input-2";
@@ -30,9 +30,10 @@ import {
   signInWithPhoneNumber,
   GoogleAuthProvider,
   signInWithPopup,
+  signInWithRedirect,
   RecaptchaVerifier,
 } from "firebase/auth";
-import { app, auth } from "@/utils/firebase";
+import { app, auth, initFirebaseFromSetting } from "@/utils/firebase";
 import * as api from "@/api/apiRoutes";
 import { setTokenThunk } from "@/redux/thunk/loginthunk";
 import NewUserModal from "../newusermodal/NewUserModal";
@@ -496,22 +497,56 @@ export function Login({ showLogin, setShowLogin, setMobileActiveKey }) {
   };
 
   const handleGoogleLogin = async () => {
+    setLoading(true);
+    setError("");
     try {
+      let activeAuth = auth;
+      if (!activeAuth) {
+        const fbRes = initFirebaseFromSetting(setting);
+        activeAuth = fbRes.auth;
+      }
+
+      if (!activeAuth) {
+        toast.error("Firebase Authentication is not configured or missing API key.");
+        setLoading(false);
+        return;
+      }
+
       const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider);
-      const credentials = GoogleAuthProvider.credentialFromResult(result);
+      provider.setCustomParameters({
+        prompt: "select_account",
+      });
+
+      const result = await signInWithPopup(activeAuth, provider);
       const user = result?.user;
+      const userEmail = user?.providerData?.[0]?.email || user?.email;
+      
       dispatch(setAuthType({ data: "google" }));
-      const response = await loginApiCall(
+      await loginApiCall(
         user,
-        user?.providerData[0].email,
+        userEmail,
         fcmToken,
         "google",
         null
       );
     } catch (error) {
-      if (error?.message?.includes("auth/popup-closed-by-user")) {
-        toast.error(t("popup_closed_by_user"));
+      setLoading(false);
+      console.error("Google Auth error:", error);
+      if (error?.code === "auth/popup-blocked") {
+        toast.info("Popups are blocked by your browser. Attempting redirect login...");
+        try {
+          let activeAuth = auth || initFirebaseFromSetting(setting).auth;
+          const provider = new GoogleAuthProvider();
+          await signInWithRedirect(activeAuth, provider);
+        } catch (redirectErr) {
+          toast.error("Google Login popup was blocked. Please allow popups for localhost in your browser address bar.");
+        }
+      } else if (error?.code === "auth/popup-closed-by-user" || error?.message?.includes("auth/popup-closed-by-user")) {
+        toast.error(t("popup_closed_by_user") || "Google Login popup closed.");
+      } else if (error?.code === "auth/unauthorized-domain") {
+        toast.error("Unauthorized domain for Google Login. Please add localhost to Firebase Auth authorized domains.");
+      } else {
+        toast.error(error?.message || t("google_login_error") || "Google Sign-In failed.");
       }
     }
   };
@@ -673,15 +708,16 @@ export function Login({ showLogin, setShowLogin, setMobileActiveKey }) {
 
   const renderPhoneInput = () => (
     <>
-      {error ? (
-        <p className="text-center text-xs text-red-500 my-2 font-semibold">
+      {error && (
+        <div className="mb-3 p-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 text-rose-600 dark:text-rose-400 text-xs font-medium text-center">
           {error}
-        </p>
-      ) : (
-        <></>
+        </div>
       )}
-      <form onSubmit={handlePhoneLogin}>
-        <div className="flex flex-col gap-4">
+      <form onSubmit={handlePhoneLogin} className="flex flex-col gap-3.5">
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+            {t("phone") || "Phone Number"}
+          </label>
           <PhoneInput
             inputStyle={{ direction: language?.type }}
             country={defaultCountry}
@@ -694,49 +730,67 @@ export function Login({ showLogin, setShowLogin, setMobileActiveKey }) {
               autoFocus: true,
             }}
           />
-          {setting?.phone_auth_password == 1 && (
-            <form className="flex flex-col relative">
+        </div>
+        {setting?.phone_auth_password == 1 && (
+          <div className="flex flex-col gap-1.5">
+            <div className="flex justify-between items-center">
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                {t("passwordMessage") || "Password"}
+              </label>
+              <button
+                type="button"
+                className="text-xs font-semibold text-[#0BADFB] hover:underline cursor-pointer"
+                onClick={() => handleShowForgotPassword("phone")}
+              >
+                {t("forget_password_?")}
+              </button>
+            </div>
+            <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
                 value={phonePassword}
                 onChange={(e) => setPhonePassword(e.target.value)}
-                className="border-[#CACACA] border-[1px] py-2 px-4 rounded-sm w-full "
+                className="w-full pl-4 pr-11 py-3 bg-slate-50/80 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 text-sm font-medium focus:bg-white dark:focus:bg-slate-800 focus:border-[#0BADFB] focus:ring-4 focus:ring-[#0BADFB]/15 outline-none transition-all duration-200"
                 placeholder={t("passwordMessage")}
               />
-              <div
-                className="absolute right-[10px] top-[12px]"
+              <button
+                type="button"
+                aria-label="Toggle password visibility"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 cursor-pointer transition-colors"
                 onClick={handlePasswordShow}
               >
-                {showPassword ? <FaRegEyeSlash /> : <FaRegEye />}
-              </div>
-              <div className="text-base font-medium leading-6 mt-2 text-right">
-                <p
-                  className="cursor-pointer"
-                  onClick={(e) => handleShowForgotPassword("phone")}
-                >
-                  {t("forget_password_?")}
-                </p>
-              </div>
-            </form>
-          )}
-        </div>
+                {showPassword ? <FaRegEyeSlash size={16} /> : <FaRegEye size={16} />}
+              </button>
+            </div>
+          </div>
+        )}
         <button
           disabled={loading}
           type="submit"
-          className="bg-[#29363F] disabled:bg-[#29363A] w-full px-4 py-2 text-white rounded-sm text-xl font-normal mt-4"
+          className="w-full mt-2 bg-[#0BADFB] hover:bg-[#0298e0] active:scale-[0.99] disabled:opacity-60 text-white font-bold text-sm py-3 px-6 rounded-xl shadow-xs hover:shadow-md hover:shadow-[#0BADFB]/20 transition-all duration-200 cursor-pointer flex items-center justify-center gap-2"
         >
-          {loading ? t("loading") : t("continue")}
+          {loading ? (
+            <span className="flex items-center gap-2">
+              <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+              {t("loading")}
+            </span>
+          ) : (
+            t("continue")
+          )}
         </button>
         {setting?.phone_auth_password == 1 && (
-          <h2 className="mt-1 block md:flex justify-start md:justify-center gap-0 md:gap-1 text-base font-medium text-center">
-            {t("registerMsg")}
-            <p
-              onClick={() => handleShowRegister("number")}
-              className="primaryColor text-base font-medium underline ml-[2px] cursor-pointer"
-            >
-              {t("registerNow")}
+          <div className="mt-3 text-center">
+            <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">
+              {t("registerMsg")}{" "}
+              <button
+                type="button"
+                onClick={() => handleShowRegister("number")}
+                className="text-[#0BADFB] hover:underline font-bold transition-colors cursor-pointer ml-1"
+              >
+                {t("registerNow")}
+              </button>
             </p>
-          </h2>
+          </div>
         )}
       </form>
     </>
@@ -744,54 +798,88 @@ export function Login({ showLogin, setShowLogin, setMobileActiveKey }) {
 
   const renderEmailInput = () => (
     <>
-      {error ? (
-        <p className="text-center text-xs text-red-500 my-2 font-semibold">
+      {error && (
+        <div className="mb-3 p-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 text-rose-600 dark:text-rose-400 text-xs font-medium text-center">
           {error}
-        </p>
-      ) : (
-        <></>
+        </div>
       )}
 
-      <form className="relative" onSubmit={handleEmailLogin}>
-        <input
-          value={email}
-          onChange={(e) => handleEmailChange(e.target.value, {})}
-          className="border-black border-[1px] py-2 px-4 rounded-sm w-full "
-          placeholder={t("please_enter_email")}
-          ref={inputRef}
-          type="email"
-          autoComplete="email"
-        />
-        <input
-          type={showPassword ? "text" : "password"}
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="border-black border-[1px] py-2 px-4 rounded-sm w-full mt-4"
-          placeholder={t("passwordMessage")}
-          autoComplete="current-password"
-        />
-        <div
-          className="absolute right-[10px] top-[72px]"
-          onClick={handlePasswordShow}
-        >
-          {showPassword ? <FaRegEyeSlash /> : <FaRegEye />}
+      <form className="flex flex-col gap-3.5" onSubmit={handleEmailLogin}>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+            {t("email")}
+          </label>
+          <input
+            value={email}
+            onChange={(e) => handleEmailChange(e.target.value, {})}
+            className="w-full px-4 py-3 bg-slate-50/80 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 text-sm font-medium focus:bg-white dark:focus:bg-slate-800 focus:border-[#0BADFB] focus:ring-4 focus:ring-[#0BADFB]/15 outline-none transition-all duration-200"
+            placeholder={t("please_enter_email")}
+            ref={inputRef}
+            type="email"
+            autoComplete="email"
+          />
         </div>
+
+        <div className="flex flex-col gap-1.5">
+          <div className="flex justify-between items-center">
+            <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+              {t("passwordMessage") || "Password"}
+            </label>
+            <button
+              type="button"
+              onClick={() => handleShowForgotPassword("email")}
+              className="text-xs font-semibold text-[#0BADFB] hover:underline cursor-pointer"
+            >
+              {t("forget_password_?")}
+            </button>
+          </div>
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full pl-4 pr-11 py-3 bg-slate-50/80 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 text-sm font-medium focus:bg-white dark:focus:bg-slate-800 focus:border-[#0BADFB] focus:ring-4 focus:ring-[#0BADFB]/15 outline-none transition-all duration-200"
+              placeholder={t("passwordMessage")}
+              autoComplete="current-password"
+            />
+            <button
+              type="button"
+              aria-label="Toggle password visibility"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 cursor-pointer transition-colors"
+              onClick={handlePasswordShow}
+            >
+              {showPassword ? <FaRegEyeSlash size={16} /> : <FaRegEye size={16} />}
+            </button>
+          </div>
+        </div>
+
         <button
           disabled={loading}
           type="submit"
-          className="bg-[#29363F] disabled:bg-[#29363A] w-full px-4 py-2 text-white rounded-sm text-xl font-normal mt-4"
+          className="w-full mt-2 bg-[#0BADFB] hover:bg-[#0298e0] active:scale-[0.99] disabled:opacity-60 text-white font-bold text-sm py-3 px-6 rounded-xl shadow-xs hover:shadow-md hover:shadow-[#0BADFB]/20 transition-all duration-200 cursor-pointer flex items-center justify-center gap-2"
         >
-          {loading ? t("loading") : t("continue")}
+          {loading ? (
+            <span className="flex items-center gap-2">
+              <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+              {t("loading")}
+            </span>
+          ) : (
+            t("continue")
+          )}
         </button>
-        <h2 className="mt-1 block md:flex justify-start md:justify-center gap-0 md:gap-1 text-base font-medium text-center">
-          {t("registerMsg")}
-          <p
-            onClick={() => handleShowRegister("email")}
-            className="primaryColor text-base font-medium underline ml-[2px] cursor-pointer"
-          >
-            {t("registerNow")}
+
+        <div className="mt-3 text-center">
+          <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">
+            {t("registerMsg")}{" "}
+            <button
+              type="button"
+              onClick={() => handleShowRegister("email")}
+              className="text-[#0BADFB] hover:underline font-bold transition-colors cursor-pointer ml-1"
+            >
+              {t("registerNow")}
+            </button>
           </p>
-        </h2>
+        </div>
       </form>
     </>
   );
@@ -799,60 +887,56 @@ export function Login({ showLogin, setShowLogin, setMobileActiveKey }) {
   return (
     <>
       <Dialog open={showLogin}>
-        <DialogContent className="overflow-y-auto overflow-x-hidden">
-          <DialogHeader className="flex justify-between items-center flex-row">
-            <div>
-              <h1 className="text-3xl font-bold">{t("login")}</h1>
-            </div>
-            {/* <div className="relative aspect-square object-cover h-[68px] w-[72px]">
-              <Image
-                src={setting?.web_settings?.web_logo}
-                alt="logo"
-                fill
-                className="aspect-square w-full h-full object-cover"
-              />
-            </div> */}
-            <div className="closeButtonBg rounded-full p-[8px] gap-[4px] cursor-pointer">
-              <RiCloseFill size={22} onClick={() => handleHideLogin()} />
-            </div>
+        <DialogContent className="overflow-y-auto overflow-x-hidden max-w-[440px] w-full p-6 sm:p-7 rounded-3xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-2xl">
+          <DialogHeader className="flex justify-between items-center flex-row pb-1">
+            <DialogTitle className="flex items-center gap-2">
+              <span className="inline-block w-2.5 h-2.5 rounded-full bg-[#0BADFB]" />
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200">
+                {t("login")}
+              </span>
+            </DialogTitle>
+            <DialogDescription className="sr-only">
+              Sign in to your account using phone, email, or Google
+            </DialogDescription>
+            <button
+              type="button"
+              aria-label="Close"
+              onClick={() => handleHideLogin()}
+              className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 flex items-center justify-center transition-all cursor-pointer"
+            >
+              <RiCloseFill size={20} />
+            </button>
           </DialogHeader>
-          <div className="">
-            <div className="my-6">
+
+          <div>
+            <div className="mb-5 mt-1">
               {isOTP ? (
-                <>
-                  <div className="flex flex-col ">
-                    <h5 className="text-[22px] text-wrap font-bold textColor">
-                      {t("enter_verification_code")}
-                    </h5>
-                    <span className="flex flex-col text-start item-start ">
-                      {t("otp_send_message")}
-                      <p className="font-weight-bold py-2">
-                        {inputType == "email" ? (
-                          <div className="flex gap-2">
-                            {t("email")}: {email}
-                          </div>
-                        ) : (
-                          <div className="flex gap-2">
-                            {t("phone")}: {phoneNumber}
-                          </div>
-                        )}
-                      </p>
-                    </span>
+                <div>
+                  <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+                    {t("enter_verification_code")}
+                  </h2>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 font-normal mt-1 leading-relaxed">
+                    {t("otp_send_message")}
+                  </p>
+                  <div className="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0BADFB]/10 text-[#0BADFB] text-xs font-semibold">
+                    <span>{inputType === "email" ? t("email") : t("phone")}:</span>
+                    <span className="font-bold">{inputType === "email" ? email : phoneNumber}</span>
                   </div>
-                </>
+                </div>
               ) : (
-                <div className="flex flex-col ">
-                  <h5 className="text-[40px] font-bold textColor">
+                <div>
+                  <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
                     {t("welcome")}
-                  </h5>
+                  </h2>
                   {(setting?.email_login == 1 || setting?.phone_login == 1) && (
-                    <span className="textColor text-xs">
+                    <p className="text-sm text-slate-500 dark:text-slate-400 font-normal mt-1 leading-relaxed">
                       {t("login_message")}
-                    </span>
+                    </p>
                   )}
                 </div>
               )}
             </div>
+
             <div>
               {isOTP ? (
                 <form
@@ -862,16 +946,14 @@ export function Login({ showLogin, setShowLogin, setMobileActiveKey }) {
                       : handleOtpVerification
                   }
                 >
-                  <div className="overflow-auto p-0 flex items-center justify-center flex-col ">
-                    {error ? (
-                      <p className="text-center text-xs text-red-500">
+                  <div className="flex items-center justify-center flex-col py-2">
+                    {error && (
+                      <div className="mb-4 w-full p-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 text-rose-600 dark:text-rose-400 text-xs font-medium text-center">
                         {error}
-                      </p>
-                    ) : (
-                      <></>
+                      </div>
                     )}
                     <OtpInput
-                      className=" mx-auto items-center flex flex-wrap justify-center p-0"
+                      className="mx-auto items-center flex justify-center gap-2 sm:gap-3 p-0"
                       value={otp}
                       onChange={setOtp}
                       numInputs={6}
@@ -879,59 +961,145 @@ export function Login({ showLogin, setShowLogin, setMobileActiveKey }) {
                       renderInput={(props) => (
                         <input
                           {...props}
-                          className="border border-gray-300 mx-1 md:mx-2 rounded-sm  bg text-center 
-                                      p-2 w-10 md:w-[62px] mt-6 "
-                          style={{
-                            fontSize: "16px",
-                          }}
+                          className="w-10 sm:w-12 h-12 text-center text-lg font-bold bg-slate-50/90 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-800 focus:border-[#0BADFB] focus:ring-4 focus:ring-[#0BADFB]/15 outline-none transition-all duration-200 shadow-2xs"
                         />
                       )}
                     />
                   </div>
-                  <div className="mt-8 flex justify-center ">
-                    <button
-                      className="w-full bg-[#29363F] text-white text-xl py-2 rounded-sm"
-                      type="submit"
-                    >
-                      {loading == true ? t("loading") : t("login")}
-                    </button>
-                  </div>
+
+                  <button
+                    className="w-full mt-6 bg-[#0BADFB] hover:bg-[#0298e0] active:scale-[0.99] disabled:opacity-60 text-white font-bold text-sm py-3 px-6 rounded-xl shadow-xs hover:shadow-md hover:shadow-[#0BADFB]/20 transition-all duration-200 cursor-pointer flex items-center justify-center gap-2"
+                    type="submit"
+                  >
+                    {loading == true ? (
+                      <span className="flex items-center gap-2">
+                        <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                        {t("loading")}
+                      </span>
+                    ) : (
+                      t("login")
+                    )}
+                  </button>
+
                   {inputType == "number" && (
-                    <div className="mt-2 text-center">
-                      <div className="text-base font-medium flex gap-1 justify-center my-2">
-                        <button onClick={handleSendOTP} disabled={otpDisabled}>
-                          {timer === 0 ? (
-                            `Resend OTP`
-                          ) : (
-                            <>
-                              {t("resetOtpIn")}{" "}
-                              <strong> {formatTime(timer)} </strong>{" "}
-                            </>
-                          )}
-                        </button>
-                      </div>
+                    <div className="mt-4 text-center">
+                      <button
+                        type="button"
+                        onClick={handleSendOTP}
+                        disabled={otpDisabled}
+                        className="text-xs font-semibold text-slate-600 dark:text-slate-400 disabled:opacity-60 enabled:hover:text-[#0BADFB] transition-colors cursor-pointer"
+                      >
+                        {timer === 0 ? (
+                          <span className="text-[#0BADFB] font-bold underline">Resend OTP</span>
+                        ) : (
+                          <>
+                            {t("resetOtpIn")}{" "}
+                            <span className="font-bold text-[#0BADFB]">{formatTime(timer)}</span>
+                          </>
+                        )}
+                      </button>
                     </div>
                   )}
                 </form>
               ) : (
                 <>
-                  <div className="my-4 flex flex-col gap-2">
-                    {renderEmailInput()}
+                  {/* Optional Tab Toggle if both email and phone login are enabled */}
+                  {setting?.email_login == 1 && setting?.phone_login == 1 && (
+                    <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl mb-4">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setInputType("email");
+                          setError("");
+                        }}
+                        className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                          inputType === "email"
+                            ? "bg-white dark:bg-slate-700 text-[#0BADFB] shadow-xs"
+                            : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+                        }`}
+                      >
+                        {t("email") || "Email"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setInputType("number");
+                          setError("");
+                        }}
+                        className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                          inputType === "number"
+                            ? "bg-white dark:bg-slate-700 text-[#0BADFB] shadow-xs"
+                            : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+                        }`}
+                      >
+                        {t("phone") || "Phone"}
+                      </button>
+                    </div>
+                  )}
+
+                  <div className="flex flex-col">
+                    {inputType === "number" ? renderPhoneInput() : renderEmailInput()}
                   </div>
-                  <div className="py-6 flex items-center justify-center">
-                    <p className="text-center">
+
+                  {/* Google Social Login */}
+                  {(setting?.google_login == 1 || setting?.google_login == "1" || setting?.google_login === undefined) && (
+                    <>
+                      <div className="relative my-4">
+                        <div className="absolute inset-0 flex items-center">
+                          <div className="w-full border-t border-slate-200 dark:border-slate-800" />
+                        </div>
+                        <div className="relative flex justify-center text-xs uppercase">
+                          <span className="bg-white dark:bg-slate-900 px-3 text-slate-400 font-semibold">
+                            {t("or") || "OR"}
+                          </span>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={handleGoogleLogin}
+                        disabled={loading}
+                        className="w-full flex items-center justify-center gap-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-200 font-bold text-sm py-3 px-5 rounded-xl shadow-2xs hover:shadow-md transition-all duration-200 cursor-pointer active:scale-[0.99] disabled:opacity-60"
+                      >
+                        <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
+                          <path
+                            fill="#4285F4"
+                            d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                          />
+                          <path
+                            fill="#34A853"
+                            d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                          />
+                          <path
+                            fill="#FBBC05"
+                            d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                          />
+                          <path
+                            fill="#EA4335"
+                            d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                          />
+                        </svg>
+                        <span>{t("continue_with_google") || "Continue with Google"}</span>
+                      </button>
+                    </>
+                  )}
+
+                  <div className="pt-4 mt-6 border-t border-slate-100 dark:border-slate-800 text-center">
+                    <p className="text-xs text-slate-400 dark:text-slate-500 leading-relaxed max-w-xs mx-auto">
                       {t("agreement_updated_message")}{" "}
-                      {setting?.web_settings?.site_title}{" "}
+                      <span className="font-semibold text-slate-600 dark:text-slate-300">
+                        {setting?.web_settings?.site_title || "Chandamama"}
+                      </span>{" "}
                       <LocalizedLink
                         href="/terms-and-conditions"
-                        className="primaryColor underline hover:text-blue-800"
+                        className="text-[#0BADFB] hover:underline font-semibold transition-colors"
                       >
                         {t("terms_of_service")}
                       </LocalizedLink>{" "}
                       {t("and")}{" "}
                       <LocalizedLink
                         href="/privacy-policy"
-                        className="primaryColor underline hover:text-blue-800"
+                        className="text-[#0BADFB] hover:underline font-semibold transition-colors"
                       >
                         {t("privacy_policy")}
                       </LocalizedLink>
@@ -954,6 +1122,25 @@ export function Login({ showLogin, setShowLogin, setMobileActiveKey }) {
         inputType={inputType}
         setTimer={setTimer}
         setShowLogin={setShowLogin}
+      />
+      <NewUserModal
+        showNewUser={showNewUser}
+        setShowNewUser={setShowNewUser}
+        setUserName={setUserName}
+        setPhoneNumberWithoutCountryCode={setPhoneNumberWithoutCountryCode}
+        setEmail={setEmail}
+        userName={userName}
+        email={email}
+        phoneNumberWithoutCountryCode={phoneNumberWithoutCountryCode}
+        countryCode={countryCode}
+        setCountryCode={setCountryCode}
+        setIsOTP={setIsOTP}
+      />
+      <ForgetPasswordModal
+        showForgetPassword={showForgetPassword}
+        setShowForgetPassword={setShowForgetPassword}
+        forgotPasswordType={forgotPasswordType}
+        isErrorMessage={isErrorMessage}
       />
     </>
   );

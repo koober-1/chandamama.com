@@ -6,6 +6,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { useLocalizedRouter } from "@/utils/localizedNav";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
+import { IoChevronBackOutline, IoChevronForwardOutline } from "react-icons/io5";
 
 import { setFilterCategory } from "@/redux/slices/productFilterSlice";
 
@@ -18,7 +19,7 @@ const HomePageSlider = ({ slider }) => {
   const slideCount = slides.length;
 
   const autoplayPlugin = Autoplay({
-    delay: 2000,
+    delay: 3500,
     stopOnInteraction: false,
     stopOnMouseEnter: true,
   });
@@ -38,6 +39,16 @@ const HomePageSlider = ({ slider }) => {
 
   const scrollTo = useCallback(
     (index) => emblaApi && emblaApi.scrollTo(index),
+    [emblaApi],
+  );
+
+  const scrollPrev = useCallback(
+    () => emblaApi && emblaApi.scrollPrev(),
+    [emblaApi],
+  );
+
+  const scrollNext = useCallback(
+    () => emblaApi && emblaApi.scrollNext(),
     [emblaApi],
   );
 
@@ -76,62 +87,73 @@ const HomePageSlider = ({ slider }) => {
   }
 
   return (
-    <div className="w-full mx-auto backgroundColor relative">
-      <div className="overflow-hidden" ref={emblaRef} key={language?.type}>
-        <div className="flex">
-          {slides.map((slide, index) => (
-            <div
-              className={`relative flex-shrink-0 min-w-0 basis-full ${
-                slideCount > 1 ? "md:basis-2/3" : ""
-              }`}
-              key={index}
-            >
+    <div className="w-full py-3 md:py-5">
+      <div className="container mx-auto px-2 md:px-4 relative group">
+        <div className="overflow-hidden rounded-2xl md:rounded-3xl border border-slate-100 shadow-card bg-slate-50" ref={emblaRef} key={language?.type}>
+          <div className="flex">
+            {slides.map((slide, index) => (
               <div
-                className="flex flex-col items-center text-center rounded-xl p-2 md:p-4"
-                onClick={() => handleSliderClick(slide)}
+                className="relative flex-shrink-0 min-w-0 basis-full"
+                key={index}
               >
-                <Image
-                  src={slide.image_url}
-                  alt="Fruit Basket"
-                  priority={index === 0}
-                  fetchpriority={index === 0 ? "high" : "auto"}
-                  className="swiper-image w-full max-h-[900px] h-[200px] sm:h-[250px] md:h-[380px] lg:h-[570px] 2xl:h-[700px] "
-                  width={1200}
-                  height={650}
-                  sizes="
-                    (max-width: 640px) 304px,
-                    (max-width: 768px) 480px,
-                    (max-width: 1024px) 600px,
-                    (max-width: 1536px) 900px,
-                    1200px
-                  "
+                <div
+                  className="relative w-full cursor-pointer overflow-hidden aspect-[16/7] md:aspect-[21/9]"
                   onClick={() => handleSliderClick(slide)}
-                />
+                >
+                  <Image
+                    src={slide.image_url}
+                    alt={slide?.name || "Promotional Banner"}
+                    priority={index === 0}
+                    fetchpriority={index === 0 ? "high" : "auto"}
+                    fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 1320px"
+                    className="object-cover w-full h-full transition-transform duration-700 ease-out hover:scale-[1.01]"
+                  />
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
 
-      <div
-        className="absolute bottom-[45px] left-1/2 -translate-x-1/2 
-             md:flex items-center justify-center gap-2 
-             md:px-[6px] md:py-1 lg:px-[10px] lg:py-2 bg-white rounded-[4px] 
-             w-fit mx-auto z-10 hidden"
-      >
-        {scrollSnaps.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => scrollTo(index)}
-            className={`h-3 rounded-full transition-all duration-300 
-        ${
-          index === selectedIndex
-            ? "bg-[var(--primary-color)] w-[22px]"
-            : "bg-gray-400 w-3"
-        }`}
-            aria-label={`Go to slide ${index + 1}`}
-          />
-        ))}
+        {/* Floating Arrows */}
+        {slideCount > 1 && (
+          <>
+            <button
+              onClick={scrollPrev}
+              type="button"
+              aria-label="Previous slide"
+              className="absolute left-6 top-1/2 -translate-y-1/2 w-9 h-9 md:w-11 md:h-11 rounded-full bg-white/90 hover:bg-white backdrop-blur-md shadow-card border border-slate-100 text-slate-700 flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 z-10 hover:scale-105 active:scale-95"
+            >
+              <IoChevronBackOutline size={20} />
+            </button>
+            <button
+              onClick={scrollNext}
+              type="button"
+              aria-label="Next slide"
+              className="absolute right-6 top-1/2 -translate-y-1/2 w-9 h-9 md:w-11 md:h-11 rounded-full bg-white/90 hover:bg-white backdrop-blur-md shadow-card border border-slate-100 text-slate-700 flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 z-10 hover:scale-105 active:scale-95"
+            >
+              <IoChevronForwardOutline size={20} />
+            </button>
+          </>
+        )}
+
+        {/* Floating Pagination Pill */}
+        {slideCount > 1 && (
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center justify-center gap-1.5 px-3 py-1.5 bg-white/90 backdrop-blur-md rounded-full shadow-subtle border border-slate-100/80 z-10">
+            {scrollSnaps.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => scrollTo(index)}
+                className={`h-2 rounded-full transition-all duration-300 ${
+                  index === selectedIndex
+                    ? "bg-emerald-700 w-6"
+                    : "bg-slate-300 w-2 hover:bg-slate-400"
+                }`}
+                aria-label={`Go to slide ${index + 1}`}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

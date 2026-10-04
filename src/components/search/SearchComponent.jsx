@@ -58,7 +58,7 @@ const SearchComponent = ({
   return (
     <>
       <div
-        className={`flex w-full  h-full flex-col px-4 py-2 items-center md:flex-row md:headerSearch  md:rounded-[5px] md:ml-[10px]  md:p-0`}
+        className="flex w-full flex-col p-2 md:p-0 items-center md:flex-row rounded-2xl md:rounded-full border border-slate-200/90 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm hover:border-[#0BADFB]/50 focus-within:border-[#0BADFB] focus-within:ring-2 focus-within:ring-[#0BADFB]/15 transition-all duration-200"
         onClick={() => setShowCategories(true)}
       >
         <Select
@@ -67,15 +67,14 @@ const SearchComponent = ({
           onValueChange={(value) => handleSearchCategory(value)}
         >
           <SelectTrigger
-            className={`w-full h-full buttonBackground cardBorder  focus:ring-0 rounded-t-sm rounded-b-none md:rounded-l-sm md:rounded-r-none md:w-[152px] md:border-none md:min-w-[152px]`}
+            className="w-full md:w-[140px] md:min-w-[140px] h-10 border-0 bg-transparent text-slate-700 dark:text-slate-200 font-medium text-xs md:border-r md:border-slate-200/80 dark:md:border-slate-700 rounded-none focus:ring-0 px-3 cursor-pointer"
           >
             <SelectValue placeholder={t("all_categories")} />
           </SelectTrigger>
           
-          <SelectContent className="w-full h-full z-50 md:w-[152px]">
+          <SelectContent className="w-full z-50 md:w-[180px] rounded-xl shadow-dropdown border border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800">
             <SelectItem value="all categories">
               {t("all_categories")}
-              
             </SelectItem>
             {isCategoryLoading ? (
                 <div className="p-2 w-full">
@@ -88,48 +87,39 @@ const SearchComponent = ({
                   </SelectItem>
                 ))
               )}
-            
           </SelectContent>
         </Select>
-        <div className="w-full flex flex-col flex-grow md:relative md:flex-row md:h-full">
+        <div className="w-full flex flex-col flex-grow md:relative md:flex-row md:items-center">
           <input
             type="text"
             placeholder={t("iAmLookingFor")}
-            className="w-full flex-grow px-4 py-2 text-sm focus:outline-none h-full shadow cardBorder order-1"
+            className="w-full flex-grow px-4 py-2 text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 bg-transparent focus:outline-none order-1"
             value={filter?.search ? filter?.search : ""}
             onChange={(e) => handleSearch(e)}
           />
           <button
-            className={`justify-center gap-1 px-4 py-2 h-full flex items-center rounded-br-md rounded-bl-md 
-            font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 bg-[#29363f] text-white text-xl shadow 
-            md:p-[20px] order-2
-            ${rtl ? "md:rounded-bl-md md:rounded-l-md md:rounded-br-none" : "md:rounded-bl-none md:rounded-r-md"}
-            `}
+            className="justify-center gap-1.5 px-4 py-2 md:px-5 md:py-2 flex items-center rounded-xl md:rounded-full font-bold text-xs uppercase tracking-wider bg-[#0BADFB] hover:bg-[#0298e0] text-white shadow-xs transition-all duration-200 order-2 my-1 md:my-0 md:mr-1.5 cursor-pointer"
             onClick={() => {
               handleSearchItemClick();
             }}
           >
-            <FaSearch />
-            {t("search")}
+            <FaSearch size={12} />
+            <span className="hidden md:inline">{t("search")}</span>
           </button>
-          <div
-            className="md:w-[calc(100%-126px)] mt-1 flex flex-wrap flex-col col-span-4  bodyBackgroundColor gap-1 order-2 md:order-2 md:absolute 
-                      md:z-10 md:bodyBackgroundColor md:top-12 md:left-0 shadow-[0_0_16px_gray]
-                    "
-          >
-            {(router?.pathname !== "/products" && filter?.search) &&
-              filter?.search_product?.map((product, idx) => (
+          {router?.pathname !== "/products" && filter?.search ? (
+            <div
+              className="w-full mt-2 flex flex-col bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-dropdown overflow-hidden gap-1 order-2 md:order-2 md:absolute md:z-50 md:top-12 md:left-0 max-h-[380px] overflow-y-auto"
+            >
+              {filter?.search_product?.map((product, idx) => (
                 <SearchProductCard key={idx} product={product} />
               ))}
-            {router?.pathname !== "/products" &&
-              !isSuggLoading &&
-              filter?.search &&
-              filter?.search_product?.length === 0 && (
-                <div className="ps-2 py-2 text-bold text-xl font-medium text-center md:text-start">
-                  {t("no_product_found")}
-                </div>
+              {!isSuggLoading && filter?.search_product?.length === 0 && (
+                  <div className="p-4 text-sm font-medium text-slate-500 text-center">
+                    {t("no_product_found")}
+                  </div>
               )}
-          </div>
+            </div>
+          ) : null}
         </div>
       </div>
     </>

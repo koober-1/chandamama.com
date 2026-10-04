@@ -1,35 +1,37 @@
-import React, { useState } from 'react'
+import React, { useState } from 'react';
 import {
     Collapsible,
     CollapsibleContent,
     CollapsibleTrigger,
-} from "@/components/ui/collapsible"
-import { FaMinus, FaPlus } from "react-icons/fa6";
+} from "@/components/ui/collapsible";
+import { FiChevronDown } from "react-icons/fi";
 
 const FAQCard = ({ faq }) => {
     const [isOpen, setIsOpen] = useState(false);
+
     return (
-        <Collapsible open={isOpen} onOpenChange={setIsOpen} className='w-full p-2 rounded-sm backgroundColor  mb-2 mx-3'>
-            <CollapsibleTrigger className={`w-full flex justify-between gap-3 items-center p-2 font-bold`}>
-                <div>
-                    <h3 className="text-lg font-bold text-left md:text-center">{faq?.translations?.question}</h3>
-                </div>
-                <div className='flex items-center'>
-                    {isOpen ?
-                        <div className='w-[30px] h-[30px] rounded-sm primaryBackColor inline-flex items-center justify-center'>
-                            <FaMinus size={24} className='text-white' />
-                        </div> :
-                        <div className='w-[30px] h-[30px] rounded-sm primaryBackColor inline-flex items-center justify-center'>
-                            <FaPlus size={24} className='text-white' />
-                        </div>
-                    }
+        <Collapsible
+            open={isOpen}
+            onOpenChange={setIsOpen}
+            className="w-full bg-white rounded-2xl border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all p-5 mb-3.5 max-w-3xl"
+        >
+            <CollapsibleTrigger className="w-full flex justify-between gap-4 items-center font-bold text-left cursor-pointer group">
+                <span className="text-sm md:text-base font-bold text-slate-800 group-hover:text-emerald-700 transition-colors">
+                    {faq?.translations?.question}
+                </span>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-transform duration-200 ${
+                    isOpen
+                        ? "bg-emerald-50 text-emerald-700 rotate-180"
+                        : "bg-slate-50 text-slate-400 group-hover:bg-slate-100 text-slate-600"
+                }`}>
+                    <FiChevronDown size={18} />
                 </div>
             </CollapsibleTrigger>
-            <CollapsibleContent className={`p-3 ${isOpen ? 'border-t border-[var(--border-color)] mt-2 textColor ' : ''}`}>
+            <CollapsibleContent className="pt-4 mt-3 border-t border-slate-100 text-xs md:text-sm text-slate-600 leading-relaxed font-normal">
                 {faq?.translations?.answer}
             </CollapsibleContent>
         </Collapsible>
-    )
-}
+    );
+};
 
-export default FAQCard
+export default FAQCard;

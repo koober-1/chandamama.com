@@ -78,25 +78,45 @@ const DeleteModal = ({ showDelete, setShowDelete }) => {
   return (
     <Dialog open={showDelete}>
       <DialogOverlay
-        className={`${theme == "light" ? "bg-white/80" : "bg-black/80"}`}
+        className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 transition-opacity"
       />
-      <DialogContent>
-        <div>
-          <h1 className="font-bold">{t("delete")}</h1>
-          <h1 className="font-bold">{t("delete_user_message")}</h1>
-          <div className="flex gap-2 mt-3">
+      <DialogContent className="sm:max-w-md p-6 rounded-2xl bg-white border border-slate-100 shadow-2xl z-50">
+        <div className="flex flex-col items-center text-center">
+          <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-500 border border-rose-100 flex items-center justify-center mb-4">
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+              />
+            </svg>
+          </div>
+          <h3 className="font-bold text-base text-slate-900">
+            {t("delete") || "Confirm Deletion"}
+          </h3>
+          <p className="text-xs text-slate-500 mt-1.5 leading-relaxed max-w-xs">
+            {t("delete_user_message") || "Are you sure you want to delete your account? This action cannot be undone."}
+          </p>
+          <div className="flex items-center gap-3 mt-6 w-full">
             <button
-              className="px-4 py-1 bg-red-700 text-white font-bold rounded-sm"
+              type="button"
+              className="flex-1 py-2.5 rounded-full border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition-colors"
               onClick={handleHideDelete}
             >
-              {" "}
-              {t("cancel")}
+              {t("cancel") || "Cancel"}
             </button>
             <button
-              className="px-4 py-1 bg-green-700 text-white font-bold rounded-sm"
+              type="button"
+              className="flex-1 py-2.5 rounded-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-xs hover:shadow transition-all"
               onClick={handleDelete}
             >
-              {t("Ok")}
+              {t("Ok") || "Delete"}
             </button>
           </div>
         </div>

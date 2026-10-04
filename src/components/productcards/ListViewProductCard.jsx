@@ -198,6 +198,7 @@ const ListViewProductCard = ({ product }) => {
         product_variant_id: productVariantId,
         qty: Qty,
         productPrice: finalPrice,
+        color_variant: selectedVariant?.color_variant || product?.color_variant || "",
       };
       dispatch(addtoGuestCart({ data: [...cart?.guestCart, productData] }));
     }
@@ -456,27 +457,23 @@ const ListViewProductCard = ({ product }) => {
     <div>
       <LocalizedLink
         href={`/product/${product?.slug}`}
-        className="flex flex-col md:flex-row w-full justify-between  group cardBorder headerBackgroundColor rounded-md"
+        className="group relative flex flex-col md:flex-row w-full justify-between items-center bg-white rounded-2xl border border-slate-100 shadow-subtle hover:border-slate-300 hover:shadow-card-hover transition-all duration-300 p-3 md:p-4 gap-4"
       >
-        <div className="flex">
-          <div className="flex-shrink-0 w-[160px] h-[160px] md:w-[160px] md:h-[160px] lg:w-[220px] lg:h-[220px] p-[10px] lg:p-[12px]">
-            <div className="relative aspect-square w-full">
+        <div className="flex items-center gap-4 w-full md:w-auto flex-1">
+          <div className="flex-shrink-0 w-28 h-28 md:w-36 md:h-36 rounded-xl overflow-hidden bg-slate-50/70 p-2 relative flex items-center justify-center">
+            <div className="relative aspect-square w-full h-full">
               <ImageWithPlaceholder
                 src={product?.image_url}
-                alt={product?.name}
+                alt={product?.translations?.name ?? product?.name}
                 width={400}
                 height={400}
-                className="w-full h-full aspect-square rounded-sm object-cover"
-                sizes="
-                (max-width: 640px) 50vw,
-                (max-width: 1024px) 33vw,
-                400px
-              "
+                className="w-full h-full aspect-square rounded-lg object-contain transition-transform duration-500 ease-out group-hover:scale-105"
+                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 400px"
                 quality={75}
               />
               {selectedVariant?.discounted_price !== 0 &&
                 selectedVariant?.discounted_price !== selectedVariant?.price ? (
-                <span className="bg-[#db3d26] rounded-[4px]  text-white text-[14px] font-bold left-2 leading-none px-2 py-1 absolute text-center uppercase top-2 whitespace-nowrap">
+                <span className="bg-[#FDD811] text-slate-900 rounded-full text-[11px] font-extrabold left-1 leading-none px-2 py-1 absolute text-center uppercase top-1 shadow-subtle">
                   {calculateDiscount(
                     selectedVariant?.discounted_price,
                     selectedVariant?.price
@@ -484,133 +481,113 @@ const ListViewProductCard = ({ product }) => {
                   % {t("off")}
                 </span>
               ) : null}
-              <ul className="absolute right-5 top-5 lg:flex flex-col gap-2 translate-x-10 group-hover:translate-x-0 opacity-0 group-hover:opacity-100 transition-all duration-500 ease-in-out hidden">
+              <ul className="absolute right-1 top-1 flex flex-col gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0 z-10">
                 <li
-                  className="buttonBorder hover:primaryBorder  hover:primaryColor rounded-full h-[30px] w-[30px] flex justify-center items-center bodyBackgroundColor"
+                  className="w-7 h-7 rounded-full bg-white/90 hover:bg-white backdrop-blur-md shadow-subtle border border-slate-200/80 flex justify-center items-center text-slate-500 hover:text-rose-500 transition-all cursor-pointer"
                   onClick={handleProductLikes}
                 >
                   <span>
                     {favoriteProducts &&
                       favoriteProducts?.includes(product?.id) ? (
-                      <BiSolidHeart size={20} className="primaryFilledColor" />
+                      <BiSolidHeart size={16} className="text-rose-500" />
                     ) : (
-                      <BiHeart size={20} className="svgColors hover:primaryColor" />
+                      <BiHeart size={16} />
                     )}
                   </span>
                 </li>
-                <li className="buttonBorder hover:primaryBorder   rounded-full h-[30px] w-[30px] flex justify-center items-center bodyBackgroundColor hover:cursor-pointer">
+                <li className="w-7 h-7 rounded-full bg-white/90 hover:bg-white backdrop-blur-md shadow-subtle border border-slate-200/80 flex justify-center items-center text-slate-500 hover:text-[#0BADFB] transition-all cursor-pointer">
                   <span onClick={handleShowDetailModal}>
-                    <FaRegEye size={18} className="svgColors hover:primaryColor" />
+                    <FaRegEye size={14} />
                   </span>
                 </li>
-
               </ul>
             </div>
           </div>
-          <div className="flex flex-col justify-center flex-1 px-1 md:px-2">
-            <div className="flex flex-col items-start gap-[24px]">
-              <div className="flex flex-col justify-between">
-                <h3 className="flex text-[14px] md:text-[16px] font-bold mt-3 max-h-[2.4em] overflow-hidden text-ellipsis capitalize w-full group-hover:primaryColor">
-                  {product?.translations?.name ?? product?.name}
-                </h3>
-                {/* {selectedVariant?.few_quantity_left == true && (
-                  <p className="text-sm text-red-600 font-semibold"> {t("few_quantity_left")}</p>
-                )} */}
-                {product?.average_rating > 0 && product?.product_rating == true ? (
-                  <div className="rating">
-                    <div className="flex">
-                      <div className="flex">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <FaStar
-                            key={star}
-                            size={15}
-                            className={`${star <= product?.average_rating
-                              ? "fill-yellow-400 text-yellow-400"
-                              : "fill-gray-200 text-gray-200"
-                              }`}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                ) : null}
-              </div>
-              <div className="flex">
+          <div className="flex flex-col justify-center flex-1 space-y-2">
+            <div>
+              <h3 className="text-base font-semibold text-slate-800 line-clamp-2 group-hover:text-[#0BADFB] transition-colors">
+                {product?.translations?.name ?? product?.name}
+              </h3>
+              {product?.average_rating > 0 && product?.product_rating == true ? (
+                <div className="flex items-center gap-1.5 my-1.5">
+                  <FaStar size={12} className="fill-amber-400 text-amber-400" />
+                  <span className="text-xs font-bold text-slate-700">
+                    {Number(product?.average_rating).toFixed(1)}
+                  </span>
+                </div>
+              ) : null}
+              <div className="flex items-baseline gap-2 mt-1">
                 {selectedVariant?.discounted_price !== 0 &&
                   selectedVariant?.discounted_price !== selectedVariant?.price ? (
                   <>
-                    {" "}
-                    <p className=" text-base font-bold textColor">
-                      {setting?.currency}
-                      {selectedVariant?.discounted_price}
-                    </p>
-                    <p className=" text-[14px] font-normal leading-[17px] m-1 line-through SecondaryTextColor">
-                      {setting?.currency}
-                      {selectedVariant?.price}
-                    </p>
+                    <span className="text-base font-bold text-slate-900">
+                      {setting?.currency}{selectedVariant?.discounted_price}
+                    </span>
+                    <span className="text-xs text-slate-400 line-through">
+                      {setting?.currency}{selectedVariant?.price}
+                    </span>
                   </>
                 ) : (
-                  <p className=" text-base font-bold">
-                    {setting?.currency}
-                    {selectedVariant?.price}
-                  </p>
+                  <span className="text-base font-bold text-slate-900">
+                    {setting?.currency}{selectedVariant?.price}
+                  </span>
                 )}
               </div>
             </div>
           </div>
         </div>
-        <div className="flex-shrink-0 w-full md:w-[140px] lg:w-[170px] xl:w-[200px]  flex items-center justify-center  p-3 md:border-l md:border-[var(--border-color)]">
+
+        {/* Right Action Area */}
+        <div className="flex-shrink-0 w-full md:w-48 flex items-center justify-center p-2 md:border-l md:border-slate-100">
           {!isProductAvailabel ? (
-            <div className="flex  gap-[12px] w-full md:w-[150px]  md:flex-col md:mb-0 items-center">
+            <div className="flex gap-2.5 w-full flex-col items-center">
               <button
-                className="w-full SecondaryTextColor flex items-center  justify-between rounded-[4px] p-2 buttonBackground line-clamp-1"
+                type="button"
+                className="w-full flex items-center justify-between rounded-xl px-3 py-1.5 bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 truncate"
                 onClick={(e) => handleShowVariantModal(e, product)}
               >
-                {`${selectedVariant?.measurement} ${selectedVariant?.unit?.translations?.short_code ?? selectedVariant?.unit?.short_code}`}
-                {productsVariants?.length > 1 ? (
-                  <div>
-                    <MdArrowDropDown size={22} />
-                  </div>
-                ) : (
-                  <></>
+                <span className="truncate">
+                  {`${selectedVariant?.measurement || ""} ${selectedVariant?.unit?.translations?.short_code ?? selectedVariant?.unit?.short_code ?? ""}`}
+                </span>
+                {productsVariants?.length > 1 && (
+                  <MdArrowDropDown size={16} className="text-slate-400 flex-shrink-0" />
                 )}
               </button>
-              <div className="flex gap-0 md:gap-3 md:h-[38px] w-full h-full flex-col md:flex-row">
+              <div className="w-full">
                 {isProductAlreadyAdded ? (
-                  <div className=" w-full cardBorder  flex justify-between rounded-sm  ">
+                  <div className="w-full flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl p-0.5 shadow-subtle">
                     <button
-                      className="flex items-center justify-center primaryBackColor text-white  font-bold text-sm w-8 md:w-6 md:p-1.5 p-2 rounded-[2px]"
+                      type="button"
+                      className="w-8 h-8 bg-white hover:bg-[#e0f7fe] text-slate-700 hover:text-[#0BADFB] rounded-lg flex items-center justify-center font-bold text-xs transition-colors shadow-subtle cursor-pointer"
                       onClick={handleQuantityDecrease}
                     >
-                      <FaMinus className="text-white w-full h-full" />
+                      <FaMinus size={11} />
                     </button>
-                    <input
-                      value={addedQuantity}
-                      disabled
-                      className="w-1/2  text-center bg-transparent"
-                      min={"1"}
-                      max={selectedVariant?.stock}
-                    />
+                    <span className="text-xs font-bold text-slate-800 text-center w-full">
+                      {addedQuantity}
+                    </span>
                     <button
-                      className="flex items-center justify-center primaryBackColor text-white font-bold text-sm w-8 md:w-6 md:p-1.5 p-2 rounded-[2px]"
+                      type="button"
+                      className="w-8 h-8 bg-[#0BADFB] hover:bg-[#0298e0] text-white rounded-lg flex items-center justify-center font-bold text-xs transition-colors shadow-subtle cursor-pointer"
                       onClick={handleQuantityIncrease}
                     >
-                      <FaPlus className="text-white w-full h-full" />
+                      <FaPlus size={11} />
                     </button>
                   </div>
                 ) : (
                   <button
+                    type="button"
                     onClick={handleIntialAddToCart}
-                    className=" w-full  flex gap-1 text-base  items-center  justify-center rounded-[4px] px-4 py-2 text-white addToCartColor primaryColor hover:primaryBackColor transition-all duration-300 hover:text-white"
+                    className="w-full flex items-center justify-center gap-1.5 text-xs font-bold py-2 px-3 rounded-xl bg-[#0BADFB] hover:bg-[#0298e0] text-white shadow-subtle transition-all duration-200 cursor-pointer"
                   >
-                    <FaShoppingBasket size={20} />
+                    <FaShoppingBasket size={14} />
                     <span>{t("add")}</span>
                   </button>
                 )}
               </div>
             </div>
           ) : (
-            <div className="  w-full flex items-center  justify-center text-center h-[38px]  text-[#db3d26] font-extrabold ">
+            <div className="w-full flex items-center justify-center text-center py-2 text-rose-600 font-bold text-xs bg-rose-50 rounded-xl">
               {t("OutOfStock")}
             </div>
           )}

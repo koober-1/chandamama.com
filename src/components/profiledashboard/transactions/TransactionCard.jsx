@@ -33,55 +33,63 @@ const TransactionCard = ({ transaction }) => {
     };
     
     return (
-        <div className='col-span-12 sm:col-span-6 md:col-span-6 lg:col-span-6 xl:col-span-6'>
-            <div className="border rounded-lg  cardBorder pt-4 m-4 md:m-2 lg:m-1.5">
-                {/* Header: Transaction ID and Date */}
-                <div className="flex justify-between  text-sm mb-3 px-4">
-                    <div>
-                        <p className="font-semibold">{t("transaction")}</p>
-                        <p className=" font-bold">{transaction?.id}</p>
-                    </div>
-                    <div className="text-right">
-                        <p className="font-semibold">{t("date")}</p>
-                        <p className="">{transaction?.created_at}</p>
-                    </div>
+        <div className="w-full bg-white rounded-2xl border border-slate-200/80 shadow-xs hover:border-slate-300 hover:shadow-card transition-all overflow-hidden flex flex-col justify-between">
+            {/* Header: Transaction ID and Date */}
+            <div className="flex justify-between items-center text-xs p-4 bg-slate-50/70 border-b border-slate-100">
+                <div>
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">{t("transaction")}</p>
+                    <p className="font-bold text-slate-800">#{transaction?.id}</p>
                 </div>
+                <div className="text-right">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">{t("date")}</p>
+                    <p className="font-semibold text-slate-700">{transaction?.created_at}</p>
+                </div>
+            </div>
 
-                {/* Payment Method */}
-                <div className="flex items-center gap-2 border-t pt-3 pb-3 px-4">
-                    <div className='h-[48px] w-[48px] p-[4px] cardBorder rounded-[4px]'>
+            {/* Payment Method */}
+            <div className="flex items-center gap-3 p-4 flex-1">
+                <div className='w-12 h-12 p-1.5 rounded-xl border border-slate-100 bg-slate-50 flex items-center justify-center shrink-0'>
+                    {paymentMethodsConfig[transaction?.type] ? (
                         <Image
-                        src={paymentMethodsConfig[transaction?.type]}
-                        alt="PayPal"
-                        className="h-full w-full object-contain"
-                        height={48}
-                        width={48}
-                        unoptimized
-                       />
-                    </div>
-                    
-                    <div>
-                        <p className=" text-sm">{t("payment_method")}</p>
-                        <p className=" font-semibold">{transaction?.type}</p>
-                    </div>
+                            src={paymentMethodsConfig[transaction?.type]}
+                            alt={transaction?.type || "Payment Method"}
+                            className="h-full w-full object-contain"
+                            height={40}
+                            width={40}
+                            unoptimized
+                        />
+                    ) : (
+                        <span className="text-xs font-bold text-slate-500 uppercase">{transaction?.type?.slice(0, 3)}</span>
+                    )}
                 </div>
+                
+                <div>
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">{t("payment_method")}</p>
+                    <p className="font-bold text-sm text-slate-800 capitalize">{transaction?.type}</p>
+                </div>
+            </div>
 
-                {/* Transaction Amount Section */}
-                <div className="cardBorder rounded-br-lg rounded-bl-lg p-1 px-4 flex justify-between items-center backgroundColor">
-                    <div>
-                        <p className=" text-sm">{t("transaction")} {t("amount")}</p>
-                        <p className="text-2xl font-bold">{setting?.currency}{transaction?.amount?.toFixed(setting?.decimal_point ? setting?.decimal_point : 0)}</p>
-                    </div>
-                    <div>
-                        {transaction?.status == "success" ? <span className="border border-green-500 text-green-500 font-bold text-sm py-1 px-2 rounded">
+            {/* Transaction Amount Section */}
+            <div className="p-4 bg-slate-50/40 border-t border-slate-100 flex justify-between items-center">
+                <div>
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                        {t("transaction")} {t("amount")}
+                    </p>
+                    <p className="text-lg md:text-xl font-bold text-slate-900">
+                        {setting?.currency}
+                        {transaction?.amount?.toFixed(setting?.decimal_point ? setting?.decimal_point : 0)}
+                    </p>
+                </div>
+                <div>
+                    {transaction?.status == "success" ? (
+                        <span className="px-3 py-1 rounded-full text-xs font-semibold bg-[#e0f7fe] text-[#0BADFB] border border-[#0BADFB]/30 inline-flex items-center">
                             {t("success")}
                         </span>
-                            :
-                            <span className="border border-red-500 text-red-500 font-bold text-sm py-1 px-2 rounded">
-                                {t("failed")}
-                            </span>
-                        }
-                    </div>
+                    ) : (
+                        <span className="px-3 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200/60 inline-flex items-center">
+                            {t("failed")}
+                        </span>
+                    )}
                 </div>
             </div>
         </div>

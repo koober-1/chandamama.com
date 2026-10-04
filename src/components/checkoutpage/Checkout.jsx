@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import CheckoutPayment from "./CheckoutPayment";
 import OrderSummaryCard from "./OrderSummaryCard";
+import CheckoutOrderItems from "./CheckoutOrderItems";
 import { useDispatch, useSelector } from "react-redux";
 import dynamic from 'next/dynamic';
 const NewAddressModal = dynamic(() => import('../newaddressmodal/NewAddressModal'), {
@@ -31,6 +32,8 @@ import {
   clearCartPromo,
   setCartCheckout,
   setCartPromo,
+  setCartProducts,
+  setCartSubTotal,
 } from "@/redux/slices/cartSlice";
 import { setAllAddresses } from "@/redux/slices/addressSlice";
 import {
@@ -154,9 +157,19 @@ const Checkout = () => {
   const handleFetchCheckout = async () => {
     const couponseCodeId = cart?.promo_code?.promo_code_id;
     try {
+      const addrLat = parseFloat(checkout?.address?.latitude);
+      const addrLng = parseFloat(checkout?.address?.longitude);
+
+      const effectiveLat =
+        addrLat ? checkout.address.latitude :
+        (city?.latitude || setting?.setting?.default_city?.latitude || 22.7196);
+      const effectiveLng =
+        addrLng ? checkout.address.longitude :
+        (city?.longitude || setting?.setting?.default_city?.longitude || 75.8577);
+
       const response = await api.getCart({
-        latitude: checkout?.address?.latitude,
-        longitude: checkout?.address?.longitude,
+        latitude: effectiveLat,
+        longitude: effectiveLng,
         checkout: 1,
         promocode_id: couponseCodeId,
         order_type: checkout?.orderType,
@@ -542,41 +555,36 @@ const Checkout = () => {
       } else {
         setCheckoutLoading(true);
         const response = await api.placeOrder({
-          productVariantId: cart?.checkout?.product_variant_id,
-          quantity: cart?.checkout?.quantity,
-          total: cart?.checkout?.sub_total,
+          productVariantId: checkoutData?.product_variant_id || cart?.checkout?.product_variant_id,
+          quantity: checkoutData?.quantity || cart?.checkout?.quantity,
+          total: checkoutData?.sub_total || cart?.checkout?.sub_total,
           deliveryCharge:
-            cart?.checkout?.delivery_charge?.total_delivery_charge,
+            checkoutData?.delivery_charge?.total_delivery_charge ?? cart?.checkout?.delivery_charge?.total_delivery_charge ?? 0,
           finalTotal: checkout?.checkoutTotal,
-          walletUsed: checkout?.isWalletChecked,
-          walletBalance: checkout?.usedWalletBalance,
+          walletUsed: checkout?.isWalletChecked ? 1 : 0,
+          walletBalance: checkout?.usedWalletBalance || 0,
           addressId: checkout?.address?.id,
           deliveryTime: formatDate,
-          orderNote: checkout?.orderNote,
+          orderNote: checkout?.orderNote || "",
           paymentMethod: checkout?.selectedPaymentMethod,
-          promocodeId: cart?.promo_code?.promo_code_id,
+          promocodeId: cart?.promo_code?.promo_code_id || 0,
           status: status,
-          order_type: checkout?.orderType,
+          order_type: checkout?.orderType || "doorstep",
         });
         if (response?.status == 1) {
           dispatch(setOrderNote(""));
-          if (
-            checkout?.selectedPaymentMethod === "COD" ||
-            checkout?.selectedPaymentMethod === "wallet"
-          ) {
-            setCheckoutLoading(false);
-            await handleInitiateTransaction();
-          } else {
-            setOrderId(response?.data?.order_id);
-            setCheckoutLoading(false);
-            await handleInitiateTransaction(
-              response?.data?.order_id,
-              capilizePaymeneMethod,
-            );
-          }
+          dispatch(clearCartPromo());
+          dispatch(setCartProducts({ data: [] }));
+          dispatch(setCartSubTotal({ data: 0 }));
+          setOrderId(response?.data?.order_id);
+          setCheckoutLoading(false);
+          await handleInitiateTransaction(
+            response?.data?.order_id,
+            capilizePaymeneMethod,
+          );
         } else {
           setCheckoutLoading(false);
-          toast.error(response?.message);
+          toast.error(response?.message || "Failed to place order");
         }
       }
     } catch (error) {
@@ -590,15 +598,11 @@ const Checkout = () => {
     capilizePaymeneMethod,
   ) => {
     try {
-      if (checkout?.selectedPaymentMethod == "COD") {
-        // redirect after successfull COD order
+      if (checkout?.selectedPaymentMethod === "COD" || checkout?.selectedPaymentMethod === "wallet") {
+        toast.success(t("order_placed_successfully") || "Order placed successfully!");
+        const orderIdQuery = currentOrderID ? `&order_id=${currentOrderID}` : "";
         return router.push(
-          `/web-payment-status?status=success&type=order&payment_method=${checkout?.selectedPaymentMethod}`,
-        );
-      } else if (checkout?.selectedPaymentMethod == "wallet") {
-        // redirect after successfull wallet order
-        return router.push(
-          `/web-payment-status?status=success&type=order&payment_method=${checkout?.selectedPaymentMethod}`,
+          `/web-payment-status?status=success&type=order&payment_method=${checkout?.selectedPaymentMethod}${orderIdQuery}`,
         );
       } else if (checkout?.selectedPaymentMethod == "paystack") {
         handlePayStackPayment(
@@ -693,72 +697,93 @@ const Checkout = () => {
               <Stepper currentStep={checkout?.currentStep} />
             </div>
             <div className="w-full">
-              <div className="grid grid-cols-12 gap-2 md:gap-6">
+              <div className="grid grid-cols-12 gap-6 items-start">
+                {/* step 1 */}
                 {checkout?.currentStep == 1 && (
-                  <div className="col-span-12 md:col-span-8 lg:col-span-9">
-                    <div className="flex flex-col cardBorder rounded-sm mb-4 backgroundColor p-4 gap-6">
-                      <h2 className="font-bold text-base md:text-xl">
+                  <div className="col-span-12 md:col-span-7 lg:col-span-7 flex flex-col gap-6">
+                    {/* Items in your order summary card */}
+                    <CheckoutOrderItems checkoutData={checkoutData} />
+
+                    {/* Delivery Method Selector Card */}
+                    <div className="bg-white border border-slate-200/80 rounded-3xl shadow-card p-6 flex flex-col gap-4">
+                      <h2 className="font-extrabold text-lg text-slate-900 tracking-tight">
                         {t("choose_delivery_method")}
                       </h2>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {/* Doorstep Option */}
                         <div
                           className="flex flex-col"
                           onClick={() => handleOptionsClick("doorstep")}
                         >
-                          <label className="flex items-center p-4 border rounded-md cursor-pointer  transition bodyBackgroundColor">
+                          <label
+                            className={`flex items-center p-4 rounded-2xl border transition-all cursor-pointer ${
+                              checkout?.orderType === "doorstep"
+                                ? "border-[#0BADFB] bg-[#e0f7fe]/40 ring-2 ring-[#0BADFB]/20 shadow-xs"
+                                : "border-slate-200 hover:border-slate-300 bg-white"
+                            }`}
+                          >
                             <input
                               type="radio"
                               name="delivery"
                               value="doorstep"
                               checked={checkout?.orderType == "doorstep"}
-                              className="mr-3 primaryAccentColor scale-150"
+                              className="mr-3 text-[#0BADFB] focus:ring-[#0BADFB] w-4 h-4 cursor-pointer"
                               disabled={cart?.doorstep_delivery_mode == 0}
                               onChange={(e) => handleOrderType(e.target.value)}
                             />
-                            <div className="flex items-center space-x-3">
-                              <div className=" rounded-md  primaryFilledColor addToCartColor p-3">
+                            <div className="flex items-center space-x-3.5">
+                              <div className="w-11 h-11 rounded-2xl bg-[#e0f7fe] text-[#0BADFB] border border-[#0BADFB]/30 flex items-center justify-center flex-shrink-0">
                                 <FiTruck size={22} />
                               </div>
                               <div>
-                                <p className="font-bold">
+                                <p className="font-bold text-sm text-slate-900">
                                   {t("home_delivery")}
                                 </p>
-                                <p className="text-sm text-gray-500">
+                                <p className="text-xs text-slate-500 mt-0.5">
                                   {t("get_it_deliverd_to_your_address")}
                                 </p>
                               </div>
                             </div>
                           </label>
                         </div>
+
+                        {/* Self Pickup Option */}
                         <div
                           className="flex flex-col"
                           onClick={() => handleOptionsClick("selfpickup")}
                         >
-                          <label className="flex items-center p-4 border rounded-md cursor-pointer transition bodyBackgroundColor peer-disabled:disabledBackgroundColor">
+                          <label
+                            className={`flex items-center p-4 rounded-2xl border transition-all cursor-pointer ${
+                              checkout?.orderType === "selfpickup"
+                                ? "border-[#0BADFB] bg-[#e0f7fe]/40 ring-2 ring-[#0BADFB]/20 shadow-xs"
+                                : "border-slate-200 hover:border-slate-300 bg-white"
+                            } ${cart?.self_pickup_mode == 0 ? "opacity-60 cursor-not-allowed" : ""}`}
+                          >
                             <input
                               type="radio"
                               name="delivery"
                               value="selfpickup"
                               disabled={cart?.self_pickup_mode == 0}
                               checked={checkout?.orderType == "selfpickup"}
-                              className="mr-3 primaryAccentColor scale-150"
+                              className="mr-3 text-[#0BADFB] focus:ring-[#0BADFB] w-4 h-4 cursor-pointer"
                               onChange={(e) => handleOrderType(e.target.value)}
                             />
-
-                            <div className="flex items-center space-x-3">
-                              <div className="p-3 rounded-md primaryFilledColor addToCartColor">
+                            <div className="flex items-center space-x-3.5">
+                              <div className="w-11 h-11 rounded-2xl bg-slate-100 text-slate-700 border border-slate-200 flex items-center justify-center flex-shrink-0">
                                 <MdOutlineStorefront size={22} />
                               </div>
                               <div>
-                                <p className="font-bold">{t("store_pickup")}</p>
-                                <p className="text-sm text-gray-500">
+                                <p className="font-bold text-sm text-slate-900">
+                                  {t("store_pickup")}
+                                </p>
+                                <p className="text-xs text-slate-500 mt-0.5">
                                   {t("pick_up_from_store")}
                                 </p>
                               </div>
                             </div>
                           </label>
                           {cart?.self_pickup_mode == 0 && (
-                            <p className="text-xs text-red-600 px-2 my-1">
+                            <p className="text-xs font-semibold text-rose-600 px-2 mt-1.5">
                               {t("selfPickUpDisabledNote")}
                             </p>
                           )}
@@ -766,167 +791,160 @@ const Checkout = () => {
                       </div>
                     </div>
 
+                    {/* Step 1 Content: Doorstep Addresses OR Store Pickup Details */}
                     {checkout?.orderType == "doorstep" ? (
-                      <div className="flex flex-col cardBorder rounded-sm mb-4">
-                        <div className="flex justify-between backgroundColor py-4 px-2 ">
-                          <span className="font-bold text-base md:text-xl">
+                      <div className="bg-white border border-slate-200/80 rounded-3xl shadow-card overflow-hidden">
+                        <div className="flex justify-between items-center bg-slate-50/80 px-6 py-4 border-b border-slate-100">
+                          <span className="font-extrabold text-base md:text-lg text-slate-900 tracking-tight">
                             {t("choose_delivery_address")}
                           </span>
                           {address?.allAddresses?.length > 0 && (
                             <button
-                              className="flex  items-center text-sm"
+                              type="button"
+                              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#0BADFB] hover:bg-[#0298e0] text-white font-bold text-xs shadow-md shadow-[#0BADFB]/20 active:scale-95 transition-all"
                               onClick={handleShowAddress}
                             >
-                              <GoPlus />
-                              {t("add_address")}
+                              <GoPlus size={16} />
+                              <span>{t("add_address")}</span>
                             </button>
                           )}
                         </div>
+
                         {address?.allAddresses?.length > 0 ? (
-                          <>
-                            {" "}
-                            <div className="flex flex-col h-full">
-                              {address?.allAddresses?.map((address) => {
-                                return (
-                                  <div key={address?.id}>
-                                    {" "}
-                                    <AddressCard
-                                      address={address}
-                                      setShowAddAddres={setShowAddAddres}
-                                      setIsAddressSelected={
-                                        setIsAddressSelected
-                                      }
-                                      fetchAddress={fetchAddress}
-                                    />
-                                  </div>
-                                );
-                              })}
+                          <div className="p-6">
+                            <div className="flex flex-col gap-3">
+                              {address?.allAddresses?.map((addr) => (
+                                <AddressCard
+                                  key={addr?.id}
+                                  address={addr}
+                                  setShowAddAddres={setShowAddAddres}
+                                  setIsAddressSelected={setIsAddressSelected}
+                                  fetchAddress={fetchAddress}
+                                />
+                              ))}
                             </div>
-                            <div className="flex justify-end m-4">
+                            <div className="flex justify-end pt-5 border-t border-slate-100 mt-5">
                               <button
+                                type="button"
                                 onClick={handleFirstStep}
-                                className="text-white primaryBackColor px-4 py-2 rounded-sm text-xl font-normal"
+                                className="px-8 py-3 rounded-full bg-[#0BADFB] hover:bg-[#0298e0] text-white font-bold text-sm tracking-wide shadow-md shadow-[#0BADFB]/20 active:scale-95 transition-all"
                               >
                                 {t("continue")}
                               </button>
                             </div>
-                          </>
+                          </div>
                         ) : (
-                          <div
-                            className=" flex justify-center  my-2 cursor-pointer"
-                            onClick={() => setShowAddAddres(true)}
-                          >
-                            <div className="border-2 border-dashed p-3 w-1/3  flex items-center justify-center gap-2 font-bold text-xl">
-                              <GoPlusCircle /> {t("add_address")}
-                            </div>
+                          <div className="p-8 flex flex-col items-center justify-center text-center">
+                            <button
+                              type="button"
+                              className="border-2 border-dashed border-slate-300 hover:border-[#0BADFB] rounded-3xl p-8 w-full max-w-md flex flex-col items-center justify-center gap-3 transition-colors group cursor-pointer"
+                              onClick={() => setShowAddAddres(true)}
+                            >
+                              <div className="w-12 h-12 rounded-full bg-[#e0f7fe] text-[#0BADFB] flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <GoPlusCircle size={24} />
+                              </div>
+                              <span className="font-bold text-sm text-slate-800">
+                                {t("add_address")}
+                              </span>
+                            </button>
                           </div>
                         )}
                       </div>
                     ) : (
-                      <div className="flex flex-col gap-4">
-                        <div className="flex flex-col gap-1">
-                          <span className="text-base font-bold ">
+                      <div className="flex flex-col gap-6">
+                        {/* Order Note */}
+                        <div className="bg-white border border-slate-200/80 rounded-3xl shadow-card p-6 flex flex-col gap-2">
+                          <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
                             {t("order_note_title")}
-                          </span>
+                          </label>
                           <textarea
-                            name=""
-                            id=""
-                            className="cardBorder rounded-sm w-full p-2 outline-none"
+                            className="w-full rounded-2xl border border-slate-200 p-4 outline-none focus:border-[#0BADFB] focus:ring-2 focus:ring-[#0BADFB]/20 text-sm transition-all"
                             value={checkout?.orderNote}
                             onChange={(e) => handleChangeOrderNote(e)}
                             placeholder={t("order_note")}
                             maxLength={256}
-                          ></textarea>
+                            rows={3}
+                          />
                         </div>
-                        <div className="flex flex-col cardBorder rounded-sm mb-4">
-                          <div className="flex flex-col gap-2">
-                            <div className="flex item-center gap-2 border-b p-4 ">
-                              <MdOutlineStorefront size={28} />
-                              <span className="font-bold text-base md:text-xl">
-                                {t("pickup_from_store")}
-                              </span>
-                            </div>
-                            <div className="flex flex-col h-full p-4   border-b gap-6">
-                              <div className="flex justify-between items-center">
-                                <div className="flex gap-2 items-center">
-                                  <IoLocationOutline size={22} />
-                                  <div className="flex flex-col gap-1">
-                                    <h2 className="font-bold text-base">
-                                      {
-                                        checkoutData?.seller_self_pickup
-                                          ?.seller_name
-                                      }
-                                    </h2>
-                                    <p className="font-medium">
-                                      {
-                                        checkoutData?.seller_self_pickup
-                                          ?.pickup_store_address
-                                      }
-                                    </p>
-                                  </div>
-                                </div>
-                                <div>
-                                  <button
-                                    className="px-4 py-2 flex item-center footer text-white rounded-md gap-1"
-                                    onClick={() => {
-                                      handleLocationRedirect(
-                                        checkoutData?.seller_self_pickup
-                                          ?.pickup_latitude,
-                                        checkoutData?.seller_self_pickup
-                                          ?.pickup_longitude,
-                                      );
-                                    }}
-                                  >
-                                    <IoLocationOutline size={22} />
-                                    {t("direction")}
-                                  </button>
-                                </div>
-                              </div>
-                              <div className="flex gap-2">
-                                <div className="flex gap-2 items-center">
-                                  <FiPhoneCall size={20} />
-                                </div>
-                                <div className="flex flex-col gap-1">
-                                  <h2 className="font-bold text-base">
-                                    {t("phone")}
-                                  </h2>
-                                  <p className="font-medium">
-                                    {
-                                      checkoutData?.seller_self_pickup
-                                        ?.seller_mobile
-                                    }
-                                  </p>
-                                </div>
-                              </div>
-                              <div className="flex gap-2">
-                                <div className="flex gap-2 items-center">
-                                  <MdOutlineWatchLater size={20} />
-                                </div>
-                                <div className="flex flex-col gap-1">
-                                  <h2 className="font-bold text-base">
-                                    {t("open_hours")}
-                                  </h2>
-                                  <p className="font-medium">
-                                    {`${t("today")} ${
-                                      checkoutData?.seller_self_pickup
-                                        .opening_time
-                                    } - ${
-                                      checkoutData?.seller_self_pickup
-                                        .closing_time
-                                    }`}
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
+
+                        {/* Pickup Store Information */}
+                        <div className="bg-white border border-slate-200/80 rounded-3xl shadow-card overflow-hidden">
+                          <div className="flex items-center gap-2.5 bg-slate-50/80 px-6 py-4 border-b border-slate-100">
+                            <MdOutlineStorefront size={24} className="text-[#0BADFB]" />
+                            <span className="font-extrabold text-base md:text-lg text-slate-900 tracking-tight">
+                              {t("pickup_from_store")}
+                            </span>
                           </div>
 
-                          <div className="flex justify-end m-4">
-                            <button
-                              onClick={handlePickupOrderStep}
-                              className="text-white primaryBackColor px-4 py-2 rounded-sm text-xl font-normal"
-                            >
-                              {t("continue")}
-                            </button>
+                          <div className="p-6 flex flex-col gap-5">
+                            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 p-4 rounded-2xl bg-slate-50/80 border border-slate-100">
+                              <div className="flex gap-3 items-start">
+                                <div className="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-600 flex-shrink-0 mt-0.5">
+                                  <IoLocationOutline size={20} />
+                                </div>
+                                <div className="flex flex-col gap-0.5">
+                                  <h3 className="font-bold text-sm text-slate-900">
+                                    {checkoutData?.seller_self_pickup?.seller_name}
+                                  </h3>
+                                  <p className="text-xs text-slate-600 leading-relaxed">
+                                    {checkoutData?.seller_self_pickup?.pickup_store_address}
+                                  </p>
+                                </div>
+                              </div>
+                              <button
+                                type="button"
+                                className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-full bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition-colors self-start sm:self-auto"
+                                onClick={() => {
+                                  handleLocationRedirect(
+                                    checkoutData?.seller_self_pickup?.pickup_latitude,
+                                    checkoutData?.seller_self_pickup?.pickup_longitude
+                                  );
+                                }}
+                              >
+                                <IoLocationOutline size={16} />
+                                <span>{t("direction")}</span>
+                              </button>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              <div className="flex items-center gap-3 p-3.5 rounded-2xl border border-slate-100 bg-slate-50/50">
+                                <div className="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-600 flex-shrink-0">
+                                  <FiPhoneCall size={18} />
+                                </div>
+                                <div>
+                                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+                                    {t("phone")}
+                                  </span>
+                                  <span className="font-bold text-xs text-slate-800">
+                                    {checkoutData?.seller_self_pickup?.seller_mobile}
+                                  </span>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-3 p-3.5 rounded-2xl border border-slate-100 bg-slate-50/50">
+                                <div className="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-600 flex-shrink-0">
+                                  <MdOutlineWatchLater size={18} />
+                                </div>
+                                <div>
+                                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+                                    {t("open_hours")}
+                                  </span>
+                                  <span className="font-bold text-xs text-slate-800">
+                                    {`${t("today")} ${checkoutData?.seller_self_pickup?.opening_time} - ${checkoutData?.seller_self_pickup?.closing_time}`}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="flex justify-end pt-3">
+                              <button
+                                type="button"
+                                onClick={handlePickupOrderStep}
+                                className="px-8 py-3 rounded-full bg-[#0BADFB] hover:bg-[#0298e0] text-white font-bold text-sm tracking-wide shadow-md shadow-[#0BADFB]/20 active:scale-95 transition-all"
+                              >
+                                {t("continue")}
+                              </button>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -936,70 +954,58 @@ const Checkout = () => {
 
                 {/* step 2 */}
                 {checkout?.currentStep == 2 && (
-                  <div className="col-span-12 md:col-span-8 lg:col-span-9">
-                    <div className="flex flex-col cardBorder rounded-sm mb-4 w-full">
-                      <div className="flex  justify-between backgroundColor p-4">
-                        <span className="font-bold text-xl">
+                  <div className="col-span-12 md:col-span-7 lg:col-span-7">
+                    <div className="bg-white border border-slate-200/80 rounded-3xl shadow-card overflow-hidden">
+                      <div className="flex justify-between items-center bg-slate-50/80 px-6 py-4 border-b border-slate-100">
+                        <span className="font-extrabold text-base md:text-lg text-slate-900 tracking-tight">
                           {timeSlotsData?.time_slot_setting == "true"
                             ? t("preferred_day_and_time")
                             : t("order_note_title")}
                         </span>
                       </div>
-                      <div className="flex flex-col p-4 gap-6">
+                      <div className="p-6 flex flex-col gap-6">
                         {timeSlotsData?.time_slot_setting == "true" && (
-                          <div className="grid grid-cols-12 items-center gap-4">
-                            <div className="col-span-12  md:col-span-6 flex flex-col gap-1 ">
-                              <span className="text-base font-bold">
+                          <div className="grid grid-cols-1 md:grid-cols-2 items-start gap-5">
+                            {/* Delivery Day Picker */}
+                            <div className="flex flex-col gap-2">
+                              <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
                                 {timeSlotsData?.time_slots_is_enabled == "true"
                                   ? t("preferred_delivery_day")
                                   : t("estimage_delivery_date")}
-                                <span className="text-red-500">*</span>
-                              </span>
+                                <span className="text-rose-500 ml-1">*</span>
+                              </label>
 
-                              <Popover open={isPopoverOpen}>
+                              <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
                                 <PopoverTrigger
-                                  className="cardBorder w-full  px-4 py-2 rounded-sm items-center flex justify-between "
-                                  onClick={() =>
-                                    setIsPopoverOpen(!isPopoverOpen)
-                                  }
+                                  className="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-white hover:border-slate-300 items-center flex justify-between text-xs md:text-sm font-semibold text-slate-800 transition-colors shadow-xs"
+                                  onClick={() => setIsPopoverOpen(!isPopoverOpen)}
                                 >
-                                  {formatDate(checkout?.selectedDate)}
-                                  <FaRegCalendarAlt />
+                                  <span>{formatDate(checkout?.selectedDate)}</span>
+                                  <FaRegCalendarAlt className="text-slate-400" />
                                 </PopoverTrigger>
-                                {timeSlotsData?.time_slots_is_enabled ==
-                                  "true" && (
-                                  <PopoverContent className="w-full p-0">
+                                {timeSlotsData?.time_slots_is_enabled == "true" && (
+                                  <PopoverContent className="w-full p-2 bg-white rounded-3xl shadow-2xl border border-slate-100">
                                     <Calendar
                                       mode="single"
                                       selected={checkout?.selectedDate}
                                       onSelect={handleSelectedDate}
-                                      className="rounded-md w-full"
-                                      // NOTE: change in version 2.0.4
+                                      className="rounded-2xl"
                                       fromDate={(() => {
                                         let date = new Date();
                                         date.setDate(
                                           date.getDate() +
-                                            parseInt(
-                                              timeSlotsData.delivery_estimate_days -
-                                                1,
-                                            ),
+                                            parseInt(timeSlotsData.delivery_estimate_days - 1)
                                         );
                                         return date;
                                       })()}
                                       toDate={(() => {
                                         let date = new Date();
                                         let allowedDays =
-                                          parseInt(
-                                            setting?.setting
-                                              ?.time_slots_allowed_days,
-                                          ) || 15;
+                                          parseInt(setting?.setting?.time_slots_allowed_days) || 15;
                                         date.setDate(
                                           date.getDate() +
-                                            parseInt(
-                                              timeSlotsData.delivery_estimate_days -
-                                                1,
-                                            ) +
-                                            (allowedDays - 1),
+                                            parseInt(timeSlotsData.delivery_estimate_days - 1) +
+                                            (allowedDays - 1)
                                         );
                                         return date;
                                       })()}
@@ -1008,82 +1014,81 @@ const Checkout = () => {
                                 )}
                               </Popover>
                             </div>
+
+                            {/* Preferred Delivery Time Slot */}
                             {timeSlotsData?.time_slots_is_enabled == "true" && (
-                              <div className="col-span-12 md:col-span-6  flex flex-col gap-1">
-                                <span className="text-base font-bold ">
+                              <div className="flex flex-col gap-2">
+                                <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
                                   {t("preferred_delivery_time")}
-                                  <span className="text-red-500">*</span>
-                                </span>
+                                  <span className="text-rose-500 ml-1">*</span>
+                                </label>
                                 <Select
                                   onValueChange={handleTimeSlotChange}
                                   value={selectedTimeSlot}
                                 >
-                                  <SelectTrigger className="w-full py-5 cardBorder">
+                                  <SelectTrigger className="w-full py-6 px-4 rounded-2xl border border-slate-200 bg-white text-xs md:text-sm font-semibold text-slate-800 shadow-xs">
                                     <SelectValue placeholder="Select a timezone">
                                       {checkout?.timeSlot?.title}
                                     </SelectValue>
                                   </SelectTrigger>
-                                  <SelectContent>
-                                    {availabeleTimeSlot?.map((slot) => {
-                                      return (
-                                        <div key={slot?.id}>
-                                          <SelectItem
-                                            value={slot}
-                                            style={{
-                                              opacity:
-                                                slot.isDisabled == "true"
-                                                  ? 0.0
-                                                  : 1,
-                                            }}
-                                            className={`
-                                              ${slot.isDisabled == true ? "opacity-10 cursor-not-allowed text-gray-500 hover:text-gray-500" : ""}
-                                            `}
-                                          >
-                                            <div className="flex justify-between items-center w-full ">
-                                              <p className="">
-                                                {slot?.translations?.title}
-                                              </p>
-                                              <p className="whitespace-nowrap ml-64">
-                                                {slot?.is_free_delivery
-                                                  ? t("freedelivery")
-                                                  : ""}
-                                              </p>
-                                            </div>
-                                          </SelectItem>
+                                  <SelectContent className="bg-white rounded-2xl shadow-xl border border-slate-100">
+                                    {availabeleTimeSlot?.map((slot) => (
+                                      <SelectItem
+                                        key={slot?.id}
+                                        value={slot}
+                                        style={{
+                                          opacity: slot.isDisabled == "true" ? 0.4 : 1,
+                                        }}
+                                        className={`rounded-xl ${
+                                          slot.isDisabled == true
+                                            ? "opacity-40 cursor-not-allowed text-slate-400"
+                                            : ""
+                                        }`}
+                                      >
+                                        <div className="flex justify-between items-center w-full gap-4">
+                                          <span>{slot?.translations?.title}</span>
+                                           {slot?.is_free_delivery && (
+                                            <span className="text-xs font-bold text-[#0BADFB] bg-[#e0f7fe] px-2 py-0.5 rounded-full">
+                                              {t("freedelivery")}
+                                            </span>
+                                          )}
                                         </div>
-                                      );
-                                    })}
+                                      </SelectItem>
+                                    ))}
                                   </SelectContent>
                                 </Select>
                               </div>
                             )}
                           </div>
                         )}
-                        <div className="flex flex-col">
-                          <span className="text-base font-bold ">
+
+                        {/* Order Note */}
+                        <div className="flex flex-col gap-2">
+                          <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
                             {t("order_note_title")}
-                          </span>
+                          </label>
                           <textarea
-                            name=""
-                            id=""
-                            className="cardBorder rounded-sm w-full p-2 outline-none"
+                            className="w-full rounded-2xl border border-slate-200 p-4 outline-none focus:border-[#0BADFB] focus:ring-2 focus:ring-[#0BADFB]/20 text-sm transition-all"
                             value={checkout?.orderNote}
                             onChange={(e) => handleChangeOrderNote(e)}
                             placeholder={t("order_note")}
                             maxLength={256}
-                          ></textarea>
+                            rows={3}
+                          />
                         </div>
-                        <div className="flex justify-end gap-4">
+
+                        {/* Navigation Buttons */}
+                        <div className="flex justify-between items-center pt-4 border-t border-slate-100">
                           <button
-                            className="cardBorder px-4 py-2 rounded-sm text-xl font-normal"
-                            onClick={() =>
-                              dispatch(setCurrentStep({ data: 1 }))
-                            }
+                            type="button"
+                            className="px-6 py-2.5 rounded-full border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold text-xs transition-colors"
+                            onClick={() => dispatch(setCurrentStep({ data: 1 }))}
                           >
                             {t("previous")}
                           </button>
                           <button
-                            className="text-white primaryBackColor px-4 py-2 rounded-sm text-xl font-normal"
+                            type="button"
+                            className="px-8 py-3 rounded-full bg-[#0BADFB] hover:bg-[#0298e0] text-white font-bold text-sm tracking-wide shadow-md shadow-[#0BADFB]/20 active:scale-95 transition-all"
                             onClick={handleSecondStep}
                           >
                             {t("continue")}
@@ -1095,7 +1100,7 @@ const Checkout = () => {
                 )}
                 {/* step 3 */}
                 {checkout?.currentStep == 3 && (
-                  <div className="md:col-span-8 lg:col-span-9 col-span-12">
+                  <div className="col-span-12 md:col-span-7 lg:col-span-7">
                     <CheckoutPayment
                       checkoutData={checkoutData}
                       selectedPaymentMethod={selectedPaymentMethod}
@@ -1104,11 +1109,14 @@ const Checkout = () => {
                     />
                   </div>
                 )}
-                <div className=" md:col-span-4 lg:col-span-3 col-span-12">
+                <div className="col-span-12 md:col-span-5 lg:col-span-5">
                   <OrderSummaryCard
                     step={checkout?.currentStep}
                     checkoutData={checkoutData}
                     handlePlaceOrder={handlePlaceOrder}
+                    handleFirstStep={handleFirstStep}
+                    handleSecondStep={handleSecondStep}
+                    handlePickupOrderStep={handlePickupOrderStep}
                     checkOutError={checkOutError}
                     checkoutLoading={checkoutLoading}
                   />

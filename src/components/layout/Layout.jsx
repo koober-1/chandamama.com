@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Header from "./Header";
 import Footer from "./Footer";
 import { setPaymentSetting, setSetting } from "@/redux/slices/settingSlice";
+import { setCity } from "@/redux/slices/citySlice";
 import { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import * as api from "@/api/apiRoutes";
@@ -22,14 +23,12 @@ const Layout = ({ children }) => {
   const dispatch = useDispatch();
   const theme = useSelector((state) => state.Theme.theme);
   const setting = useSelector((state) => state.Setting);
+  const city = useSelector((state) => state.City?.city);
   const language = useSelector((state) => state.Language.selectedLanguage);
 
   const availableLanguages = useSelector(
     (state) => state.Language.availableLanguages,
   );
-
-  const [loading, setLoading] = useState(false);
-  // const [showLocation, setShowLocation] = useState(false)
 
   useEffect(() => {
     if (!language?.type) return;
@@ -191,73 +190,84 @@ const Layout = ({ children }) => {
   }, [language, router.isReady]);
 
   const fetchSetting = async () => {
-    setLoading(true);
     try {
       const res = await api.getSetting();
-      const setting = JSON.parse(atob(res.data));
-      dispatch(setSetting({ data: setting }));
-      dispatch(setFavoriteProductIds({ data: setting?.favorite_product_ids }));
-      const themeColor = setting?.web_settings?.color;
-      document.documentElement.style.setProperty(
-        "--primary-color",
-        setting?.web_settings?.color,
-      );
-      if (setting?.favicon) {
-        const link =
-          document.querySelector("link[rel*='icon']") ||
-          document.createElement("link");
-        const oldLinks = document.querySelectorAll("link[rel*='icon']");
-        oldLinks.forEach((el) => el.parentNode.removeChild(el));
-        link.type = "image/x-icon";
-        link.rel = "shortcut icon";
-        link.href = setting.favicon;
-        link.sizes = "16x16 32x32 64x64";
-        document.getElementsByTagName("head")[0].appendChild(link);
+      let setting = null;
+      if (typeof res?.data === "string") {
+        try {
+          setting = JSON.parse(atob(res.data));
+        } catch {
+          try {
+            setting = JSON.parse(res.data);
+          } catch {
+            setting = res.data;
+          }
+        }
+      } else {
+        setting = res?.data;
       }
-      document.documentElement.style.setProperty(
-        "--light-primary-color",
-        setting?.web_settings?.light_color,
-      );
-      setLoading(false);
+
+      if (setting) {
+        dispatch(setSetting({ data: setting }));
+        if (setting?.default_city && (!city || !city.latitude)) {
+          dispatch(setCity({ data: setting.default_city }));
+        }
+        dispatch(setFavoriteProductIds({ data: setting?.favorite_product_ids || [] }));
+
+        const themeColor = setting?.web_settings?.color || setting?.color;
+        if (themeColor) {
+          document.documentElement.style.setProperty("--primary-color", themeColor);
+        }
+        if (setting?.favicon) {
+          const link =
+            document.querySelector("link[rel*='icon']") ||
+            document.createElement("link");
+          const oldLinks = document.querySelectorAll("link[rel*='icon']");
+          oldLinks.forEach((el) => el.parentNode.removeChild(el));
+          link.type = "image/x-icon";
+          link.rel = "shortcut icon";
+          link.href = setting.favicon;
+          link.sizes = "16x16 32x32 64x64";
+          document.getElementsByTagName("head")[0].appendChild(link);
+        }
+        const lightThemeColor = setting?.web_settings?.light_color || setting?.light_color;
+        if (lightThemeColor) {
+          document.documentElement.style.setProperty("--light-primary-color", lightThemeColor);
+        }
+      }
     } catch (error) {
-      setLoading(false);
-      console.log("error", error);
+      console.log("error fetching setting", error);
     }
   };
 
   const fetchPaymentSetting = async () => {
-    setLoading(true);
     try {
       const res = await api.getPaymentSetting();
-      dispatch(setPaymentSetting({ data: JSON.parse(atob(res.data)) }));
+      let paymentData = null;
+      if (typeof res?.data === "string") {
+        try {
+          paymentData = JSON.parse(atob(res.data));
+        } catch {
+          try {
+            paymentData = JSON.parse(res.data);
+          } catch {
+            paymentData = res.data;
+          }
+        }
+      } else {
+        paymentData = res?.data;
+      }
+      if (paymentData) {
+        dispatch(setPaymentSetting({ data: paymentData }));
+      }
     } catch (error) {
-      setLoading(false);
-      console.log("error", error);
+      console.log("error fetching payment setting", error);
     }
   };
 
-  useEffect(() => {
-    // Show loader on route change start
-    const handleStart = () => setLoading(true);
-    const handleComplete = () => setLoading(false);
-
-    router.events.on("routeChangeStart", handleStart);
-    router.events.on("routeChangeComplete", handleComplete);
-    router.events.on("routeChangeError", handleComplete);
-
-    // Cleanup event listeners
-    return () => {
-      router.events.off("routeChangeStart", handleStart);
-      router.events.off("routeChangeComplete", handleComplete);
-      router.events.off("routeChangeError", handleComplete);
-    };
-  }, [router]);
-
   return (
     <section>
-      {loading ? (
-        <Loader screen="full" />
-      ) : setting?.setting?.web_settings?.website_mode == 1 ? (
+      {setting?.setting?.web_settings?.website_mode == 1 ? (
         <MaintanceMode
           message={setting?.setting?.web_settings?.website_mode_remark}
         />

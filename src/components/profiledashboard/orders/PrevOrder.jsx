@@ -69,42 +69,43 @@ const PrevOrder = () => {
   };
 
   return (
-    <div className="w-full cardBorder rounded-sm ">
-      <div className="backgroundColor flex justify-between p-4 items-center">
-        <h2 className="font-bold text-xl">{t("order_history")}</h2>
+    <div className="w-full bg-white rounded-3xl border border-slate-200/80 shadow-card overflow-hidden">
+      <div className="bg-slate-50/70 border-b border-slate-100 flex flex-col sm:flex-row justify-between p-5 md:p-6 items-start sm:items-center gap-3">
+        <div>
+          <h2 className="font-bold text-xl md:text-2xl text-slate-900 tracking-tight">{t("order_history")}</h2>
+          <p className="text-xs text-slate-500 mt-0.5">Review and reorder past purchases</p>
+        </div>
         <div className="flex items-center gap-2">
           <DropdownMenu>
-            <DropdownMenuTrigger className="w-full rounded cardBorder border text-base textColor py-2 px-4 flex items-center gap-2 group justify-between">
-              <div className="font-medium">
+            <DropdownMenuTrigger className="rounded-full border border-slate-200 bg-white hover:border-slate-300 px-4 py-2 text-xs font-semibold text-slate-700 shadow-2xs transition-all flex items-center gap-2 group">
+              <span className="font-medium">
                 {orderType
                   ? orderType == "doorstep"
                     ? t("home_delivery")
                     : t("store_pickup")
                   : t("select_order_type")}
-              </div>
-              <div>
-                <FaCaretDown className="transition-transform duration-300 ease-in-out group-data-[state=open]:-rotate-180" />
-              </div>
+              </span>
+              <FaCaretDown className="text-slate-400 transition-transform duration-300 ease-in-out group-data-[state=open]:-rotate-180" />
             </DropdownMenuTrigger>
-            <DropdownMenuContent className=" transition-all duration-300 ease-in-out">
+            <DropdownMenuContent className="rounded-2xl border border-slate-100 shadow-xl bg-white p-1 min-w-[160px]">
               <DropdownMenuItem
-                key={1}
+                key={0}
                 onSelect={() => setOrderType("")}
-                className="text-base textColor"
+                className="text-xs font-medium rounded-xl text-slate-700 hover:bg-slate-50 cursor-pointer"
               >
                 {t("default")}
               </DropdownMenuItem>
               <DropdownMenuItem
                 key={1}
                 onSelect={() => setOrderType("doorstep")}
-                className="text-base textColor"
+                className="text-xs font-medium rounded-xl text-slate-700 hover:bg-slate-50 cursor-pointer"
               >
                 {t("home_delivery")}
               </DropdownMenuItem>
               <DropdownMenuItem
                 key={2}
                 onSelect={() => setOrderType("selfpickup")}
-                className="text-base textColor"
+                className="text-xs font-medium rounded-xl text-slate-700 hover:bg-slate-50 cursor-pointer"
               >
                 {t("store_pickup")}
               </DropdownMenuItem>
@@ -112,40 +113,50 @@ const PrevOrder = () => {
           </DropdownMenu>
         </div>
       </div>
-      <div>
+
+      <div className="p-5 md:p-6 space-y-4">
         {loading ? (
-          Array.from({ length: 6 })?.map((_, index) => {
-            return <CardSkeleton height={200} padding="p-4" key={index} />;
-          })
+          <div className="flex flex-col gap-4">
+            {Array.from({ length: 3 })?.map((_, index) => {
+              return <CardSkeleton height={180} padding="p-4" key={index} />;
+            })}
+          </div>
         ) : prevOrders?.length == 0 ? (
-          <div className="h-full w-full flex items-center justify-center flex-col gap-2 p-3">
-            <Image
-              src={OrderNotFoundImage}
-              alt="Order Not found"
-              width={298}
-              height={298}
-              unoptimized
-              className="h-1/2 w-1/2"
-            />
-            <h2 className="text-2xl font-bold">{t("no_order")}</h2>
+          <div className="py-16 px-4 flex items-center justify-center flex-col text-center">
+            <div className="w-24 h-24 mb-4 opacity-80">
+              <Image
+                src={OrderNotFoundImage}
+                alt="Order Not found"
+                width={120}
+                height={120}
+                unoptimized
+                className="w-full h-full object-contain"
+              />
+            </div>
+            <h3 className="text-lg font-bold text-slate-900">{t("no_order")}</h3>
+            <p className="text-xs text-slate-500 mt-1 max-w-xs">You have no previous completed orders.</p>
           </div>
         ) : (
-          prevOrders?.map((order) => {
-            return <PrevOrderCard order={order} key={order?.id} />;
-          })
+          <div className="flex flex-col gap-4">
+            {prevOrders?.map((order) => {
+              return <PrevOrderCard order={order} key={order?.id} />;
+            })}
+          </div>
         )}
-        {loadingMore ? (
-          Array?.from({ length: 6 })?.map((_, index) => {
-            return <CardSkeleton height={200} padding="p-4" key={index} />;
-          })
-        ) : (
-          <></>
+
+        {loadingMore && (
+          <div className="flex flex-col gap-4 pt-2">
+            {Array?.from({ length: 2 })?.map((_, index) => {
+              return <CardSkeleton height={180} padding="p-4" key={index} />;
+            })}
+          </div>
         )}
       </div>
+
       {totalOrders > prevOrders?.length && (
-        <div className="flex justify-center p-4">
+        <div className="flex justify-center p-6 border-t border-slate-100 bg-slate-50/40">
           <button
-            className="bg-[#29363f] py-2 px-4 text-white rounded-sm text-lg font-normal"
+            className="px-6 py-2.5 rounded-full bg-slate-900 hover:bg-black text-white font-semibold text-xs shadow-sm transition-all hover:scale-[1.02]"
             onClick={handleFetchMore}
           >
             {t("load_more")}

@@ -9,7 +9,13 @@ import CardSkeleton from '../skeleton/CardSkeleton'
 const SellerListing = () => {
     const router = useRouter()
     const dispatch = useDispatch()
-    const city = useSelector(state => state.City.city);
+    const city = useSelector(state => state.City?.city);
+    const setting = useSelector(state => state.Setting?.setting);
+
+    const effectiveLat =
+        city?.latitude || setting?.default_city?.latitude || 23.242;
+    const effectiveLng =
+        city?.longitude || setting?.default_city?.longitude || 69.6669;
 
     const [sellers, setSellers] = useState([])
     const [isLoading, setIsLoading] = useState(false)
@@ -18,8 +24,8 @@ const SellerListing = () => {
         setIsLoading(true)
         try {
             const response = await api.getSellers({
-                latitude: city?.latitude,
-                longitude: city?.longitude
+                latitude: effectiveLat,
+                longitude: effectiveLng
             })
             setSellers(response?.data);
         } catch (error) {

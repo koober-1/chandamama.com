@@ -1,0 +1,871 @@
+# ROLE
+
+Act as a **Senior Front-End Engineer, Expert UI/UX Designer, Product Designer, and Design-System Engineer**.
+
+Your task is to **redesign and recreate the entire existing website UI** by using the following website as the visual and structural reference:
+
+**Reference Website:**
+https://apsaraofficial.com/
+
+The reference website is the source of inspiration for the **visual design, layout patterns, spacing system, typography hierarchy, component styling, navigation behavior, section composition, card design, responsive behavior, and overall visual experience**.
+
+However, my existing website remains the source of truth for all **actual content, business logic, data, functionality, routes, APIs, branding, and application behavior**.
+
+---
+
+# 1. MOST IMPORTANT RULE — NEVER CHANGE MY ACTUAL CONTENT
+
+This is a **UI redesign task, NOT a content replacement task**.
+
+You MUST preserve all existing project content exactly unless a change is technically required to fix a UI issue.
+
+Do NOT:
+
+* Replace my text with text from the reference website.
+* Copy product names from the reference website.
+* Copy headings, descriptions, navigation labels, prices, statistics, testimonials, categories, or business information from the reference website.
+* Invent new business content.
+* Remove important existing content simply because the reference website does not have the same section.
+* Rename my existing business terminology.
+* Replace my existing branding with Apsara branding.
+* Replace my logo with the reference website's logo.
+* Replace my images with reference-site images unless an image is explicitly intended as a temporary visual placeholder.
+* Change API response data.
+* Change database data.
+* Change business rules.
+* Change authentication or authorization logic.
+* Change existing application functionality merely for visual similarity.
+
+### HARD CONSTRAINT
+
+**MY EXISTING CONTENT + FUNCTIONALITY > REFERENCE WEBSITE DESIGN**
+
+The reference website controls the **LOOK AND FEEL**.
+
+My existing website controls the **CONTENT AND FUNCTIONALITY**.
+
+Never reverse these priorities.
+
+---
+
+# 2. FIRST — AUDIT MY EXISTING PROJECT
+
+Before writing or modifying significant code, inspect the entire existing project.
+
+Understand:
+
+* Project structure
+* Framework
+* Routes
+* Pages
+* Components
+* Existing layouts
+* Header
+* Footer
+* Forms
+* Cards
+* Tables
+* Modals
+* Buttons
+* Filters
+* Search
+* API integrations
+* Authentication
+* State management
+* Existing responsive behavior
+* Existing assets
+* Existing reusable components
+* Existing design tokens
+* Existing backend/API dependencies
+
+Determine which components can be improved rather than unnecessarily recreated.
+
+### IMPORTANT
+
+Do NOT rewrite the entire application from scratch.
+
+Preserve the existing architecture wherever practical.
+
+Make the redesign **incrementally and safely**.
+
+---
+
+# 3. STUDY THE REFERENCE WEBSITE BEFORE IMPLEMENTATION
+
+Open and analyze:
+
+https://apsaraofficial.com/
+
+Study the website visually and structurally.
+
+Analyze:
+
+### Header
+
+* Logo placement
+* Navigation hierarchy
+* Navigation spacing
+* Dropdown behavior
+* Header height
+* Header alignment
+* Search interaction
+* Mobile navigation
+* Icons
+* Sticky/fixed behavior if present
+
+### Hero / Main Visual Area
+
+Study:
+
+* Visual proportions
+* Section height
+* Content positioning
+* Typography hierarchy
+* CTA placement
+* Image treatment
+* White space
+* Background treatment
+* Desktop/mobile differences
+
+### Content Sections
+
+Analyze:
+
+* Section width
+* Section spacing
+* Section heading hierarchy
+* Supporting text
+* Grid structure
+* Number of columns
+* Card proportions
+* Image ratios
+* CTA styling
+* Hover behavior
+* Carousel/slider behavior where applicable
+
+### Product / Content Cards
+
+Study:
+
+* Border radius
+* Image container
+* Typography
+* Price/detail hierarchy
+* CTA placement
+* Button shape
+* Card spacing
+* Hover animation
+* Shadows/borders
+* Desktop/mobile layout
+
+### Footer
+
+Analyze:
+
+* Column structure
+* Link grouping
+* Typography hierarchy
+* Spacing
+* Social icons
+* Newsletter/form areas
+* Legal links
+* Mobile stacking
+
+### Global Design System
+
+Extract the visual language of the reference:
+
+* Primary colors
+* Secondary colors
+* Background colors
+* Text colors
+* Muted colors
+* Border colors
+* Typography style
+* Font sizes
+* Font weights
+* Line heights
+* Border radius
+* Shadows
+* Section spacing
+* Container widths
+* Grid gaps
+* Button styles
+* Input styles
+* Icon sizing
+* Animation speed
+* Hover states
+* Transition patterns
+
+Do not blindly copy values.
+
+Use the reference as the visual benchmark and adapt the system to my application's content.
+
+---
+
+# 4. RECREATE THE REFERENCE'S DESIGN LANGUAGE
+
+The final website should feel like it belongs to the **same visual design family as the reference website**, while remaining completely my own website.
+
+Recreate:
+
+* Overall visual hierarchy
+* Clean editorial/product-oriented layout
+* Strong section separation
+* Spacious composition
+* Consistent container widths
+* Refined typography
+* Large visual areas
+* Modern content cards
+* Clear CTAs
+* Structured navigation
+* Consistent spacing
+* Consistent image ratios
+* Strong responsive behavior
+* Subtle interaction animations
+* Cohesive design system
+
+Do NOT simply place my existing components inside random colors.
+
+The entire application should feel intentionally redesigned.
+
+---
+
+# 5. PAGE-BY-PAGE IMPLEMENTATION
+
+Do not redesign only the homepage.
+
+Redesign the **entire website**.
+
+Work page by page.
+
+Recommended order:
+
+1. Global design system
+2. Header
+3. Footer
+4. Main layout/container system
+5. Homepage
+6. Primary listing pages
+7. Detail pages
+8. Forms
+9. Dashboard/application pages
+10. Authentication pages
+11. Secondary pages
+12. Error/empty/loading states
+13. Mobile experience
+
+Use the existing application's actual routes to determine the complete page list.
+
+Do not invent routes that do not exist.
+
+---
+
+# 6. COMPONENT-BY-COMPONENT APPROACH
+
+Create or improve reusable components wherever appropriate.
+
+Examples:
+
+* Header
+* Navigation
+* Dropdown
+* Mobile menu
+* Hero section
+* Section heading
+* CTA
+* Content card
+* Product/service card
+* Image card
+* Grid
+* Carousel
+* Search
+* Filter
+* Tabs
+* Form fields
+* Buttons
+* Modal
+* Drawer
+* Table
+* Pagination
+* Footer
+* Loading state
+* Empty state
+* Error state
+
+Do not duplicate nearly identical components across pages.
+
+Build a reusable design system.
+
+---
+
+# 7. CONTENT MAPPING RULE
+
+For every section in my existing website:
+
+### Keep the existing content.
+
+Then determine:
+
+**"How would the reference website present this same content?"**
+
+For example:
+
+If my current page has:
+
+* Heading
+* Description
+* Image
+* CTA
+* Cards
+
+Do not replace those values.
+
+Instead redesign the presentation using the reference's:
+
+* layout
+* hierarchy
+* spacing
+* typography
+* card structure
+* visual balance
+* CTA styling
+
+This is the core transformation.
+
+---
+
+# 8. DO NOT FORCE THE REFERENCE'S SECTIONS INTO MY WEBSITE
+
+The reference website may contain sections that my website does not need.
+
+Do NOT add sections merely because they exist on the reference website.
+
+Likewise, my website may have sections that do not exist on the reference website.
+
+Those sections must remain.
+
+In that situation:
+
+**Preserve my section's purpose and content, but redesign its presentation using the reference's visual language.**
+
+---
+
+# 9. RESPONSIVE DESIGN
+
+The redesign must be fully responsive.
+
+Test and optimize at minimum:
+
+* 1440px
+* 1280px
+* 1024px
+* 768px
+* 430px
+* 390px
+* 360px
+
+Do not treat mobile as a shrunken desktop.
+
+Create intentional mobile layouts.
+
+Pay special attention to:
+
+* Header
+* Navigation
+* Hero
+* Cards
+* Grids
+* Forms
+* Tables
+* Images
+* Buttons
+* Text wrapping
+* Spacing
+* Modal/drawer behavior
+* Overflow
+* Touch targets
+
+Nothing should:
+
+* overflow horizontally
+* overlap
+* become unreadable
+* create unusable controls
+* cause layout jumps unnecessarily
+
+---
+
+# 10. TYPOGRAPHY
+
+Recreate the reference website's typographic feel.
+
+Pay attention to:
+
+* Font family style
+* Font pairing
+* Heading weight
+* Body weight
+* Letter spacing
+* Line height
+* Heading scale
+* Paragraph width
+* Button typography
+* Navigation typography
+* Mobile typography
+
+However, do not destroy readability simply to imitate the reference.
+
+Typography must remain accessible and professional.
+
+---
+
+# 11. COLOR SYSTEM
+
+Analyze the reference website's color palette and create a consistent design token system.
+
+Define reusable variables/tokens for:
+
+* Primary
+* Secondary
+* Accent
+* Background
+* Surface
+* Text
+* Muted text
+* Border
+* Hover
+* Active
+* Success
+* Warning
+* Error
+
+Use these consistently throughout the entire application.
+
+Do not introduce unrelated colors without a clear UX reason.
+
+---
+
+# 12. IMAGES AND ASSETS
+
+Use my existing website assets whenever available.
+
+Do NOT copy the reference site's proprietary images, logos, product photography, or branding assets.
+
+When my application already contains suitable imagery:
+
+* Preserve it.
+* Reframe/crop it appropriately.
+* Apply the reference's image treatment.
+* Match the correct aspect ratio.
+
+When an image is missing:
+
+Use an existing project asset or a clearly marked placeholder rather than silently replacing it with unrelated reference-site content.
+
+---
+
+# 13. ANIMATIONS AND INTERACTIONS
+
+Use animation carefully.
+
+The goal is:
+
+**Premium + smooth + intentional**
+
+NOT:
+
+**Over-animated + distracting**
+
+Use subtle:
+
+* Hover transitions
+* Image zoom
+* Fade/slide effects
+* Button transitions
+* Dropdown animation
+* Mobile menu animation
+* Card interactions
+* Scroll-reveal where appropriate
+
+Keep animations fast and smooth.
+
+Avoid animation that negatively affects:
+
+* performance
+* accessibility
+* usability
+* readability
+
+Respect `prefers-reduced-motion`.
+
+---
+
+# 14. ACCESSIBILITY
+
+Maintain strong accessibility standards.
+
+Ensure:
+
+* Semantic HTML
+* Proper heading hierarchy
+* Keyboard navigation
+* Visible focus states
+* Accessible buttons
+* Accessible forms
+* Alt text for meaningful images
+* Proper labels
+* Sufficient contrast
+* Touch-friendly controls
+* Screen-reader-friendly navigation
+
+Visual similarity must never come at the cost of accessibility.
+
+---
+
+# 15. PERFORMANCE
+
+Do not sacrifice performance for visual effects.
+
+Optimize:
+
+* Image loading
+* Component rendering
+* Unnecessary re-renders
+* Large assets
+* Animation performance
+* Layout shifts
+* Responsive images
+* Lazy loading where appropriate
+
+Do not install large libraries unnecessarily.
+
+Reuse existing dependencies whenever possible.
+
+---
+
+# 16. FUNCTIONALITY MUST CONTINUE WORKING
+
+After redesigning every page, verify that existing functionality still works.
+
+Check:
+
+* Navigation
+* Routing
+* Search
+* Forms
+* Authentication
+* API calls
+* Filters
+* Pagination
+* Data loading
+* Buttons
+* Modals
+* Dropdowns
+* CRUD operations
+* Existing business workflows
+* Error handling
+* Loading states
+* Empty states
+
+A visually beautiful page that breaks functionality is NOT acceptable.
+
+---
+
+# 17. DO NOT HARDCODE APPLICATION DATA
+
+This is extremely important.
+
+Do NOT hardcode:
+
+* API data
+* Database values
+* Product values
+* User information
+* Business information
+* Statistics
+* Dynamic labels
+* Dynamic lists
+* Prices
+* IDs
+* Statuses
+
+Use the existing application's real data sources.
+
+Hardcoding is allowed only for genuine UI constants such as:
+
+* spacing tokens
+* breakpoints
+* design-system values
+* static visual configuration
+
+---
+
+# 18. PRESERVE EXISTING BUSINESS LOGIC
+
+The redesign must not modify business logic unless absolutely necessary.
+
+Do not change:
+
+* API contracts
+* Request payloads
+* Response structures
+* Authentication logic
+* Authorization rules
+* Database schemas
+* Business calculations
+* Existing workflows
+
+Prefer changing:
+
+* JSX structure
+* CSS
+* Tailwind classes
+* layout components
+* reusable UI components
+* design tokens
+* interaction presentation
+
+---
+
+# 19. BROWSER-BASED VISUAL COMPARISON
+
+After implementing each major page:
+
+1. Run the application.
+2. Open the page in the browser.
+3. Compare it against the reference website.
+4. Inspect the actual rendered result.
+5. Fix visual differences.
+6. Repeat until the result is visually consistent.
+
+Compare:
+
+* Header height
+* Alignment
+* Container width
+* Section spacing
+* Typography
+* Image sizing
+* Card proportions
+* Button dimensions
+* Grid density
+* Whitespace
+* Responsive behavior
+* Footer structure
+
+Do not claim "pixel perfect."
+
+Instead, aim for a **high-fidelity visual recreation** confirmed through actual browser comparison.
+
+---
+
+# 20. IMPORTANT: DO NOT STOP AFTER FIRST PASS
+
+The first implementation is only a baseline.
+
+After the initial implementation, perform a second visual refinement pass.
+
+Look specifically for:
+
+* Excessive spacing
+* Uneven spacing
+* Incorrect font sizes
+* Incorrect alignment
+* Inconsistent card heights
+* Weak hierarchy
+* Poor mobile layouts
+* Incorrect image cropping
+* Inconsistent buttons
+* Inconsistent borders
+* Unnecessary shadows
+* Broken responsive sections
+* Visual inconsistency between pages
+
+Fix them.
+
+---
+
+# 21. DESIGN CONSISTENCY
+
+Once the first few pages are redesigned, extract the common visual rules into a reusable design system.
+
+For example:
+
+```text
+Design System
+├── Colors
+├── Typography
+├── Spacing
+├── Containers
+├── Buttons
+├── Inputs
+├── Cards
+├── Navigation
+├── Sections
+├── Images
+├── Shadows
+├── Borders
+├── Breakpoints
+└── Animations
+```
+
+Every page must use the same system.
+
+Do not allow each page to develop a different visual language.
+
+---
+
+# 22. IMPORTANT DECISION RULE
+
+Whenever there is a conflict between the reference and my existing website:
+
+### CONTENT CONFLICT
+
+Keep **my content**.
+
+### FUNCTIONALITY CONFLICT
+
+Keep **my functionality**.
+
+### BUSINESS LOGIC CONFLICT
+
+Keep **my business logic**.
+
+### VISUAL DESIGN CONFLICT
+
+Follow the **reference design language**.
+
+### UX CONFLICT
+
+Use the reference as the starting point, then choose the cleaner accessible implementation without breaking my application's behavior.
+
+---
+
+# 23. TECH STACK RULE
+
+Use the existing project's current technology stack.
+
+Do NOT migrate frameworks simply to achieve the redesign.
+
+If the project already uses:
+
+* React
+* Vite
+* Tailwind CSS
+* JavaScript/TypeScript
+* Existing component libraries
+
+continue using them unless there is a compelling technical reason not to.
+
+Do not perform unnecessary architectural changes.
+
+---
+
+# 24. CODE QUALITY
+
+Write production-quality code.
+
+Follow:
+
+* reusable components
+* clean naming
+* proper separation of concerns
+* minimal duplication
+* maintainable styling
+* responsive-first thinking
+* accessible markup
+* clean file structure
+
+Avoid:
+
+* giant components
+* repeated CSS
+* random inline styles everywhere
+* unnecessary dependencies
+* dead code
+* unused imports
+* temporary hacks left in production
+
+---
+
+# 25. BEFORE/AFTER VALIDATION
+
+Before considering the redesign complete:
+
+### Functionality
+
+Verify that existing features still work.
+
+### Content
+
+Verify that no original content has been replaced.
+
+### UI
+
+Verify that pages consistently follow the reference-inspired design system.
+
+### Responsive
+
+Verify desktop, tablet, and mobile.
+
+### Browser
+
+Actually inspect the rendered application.
+
+### Console
+
+Fix:
+
+* console errors
+* broken imports
+* React warnings
+* invalid HTML
+* failed network requests caused by the UI changes
+
+### Visual
+
+Perform a final visual refinement pass.
+
+---
+
+# 26. FINAL ACCEPTANCE CRITERIA
+
+The task is complete only when:
+
+* The entire existing website has been redesigned, not just one page.
+* The visual language strongly reflects the reference website.
+* My original content remains intact.
+* My branding remains intact.
+* Existing functionality continues working.
+* Existing backend/API integrations remain functional.
+* No application data is hardcoded.
+* Responsive behavior is polished.
+* Components are reusable.
+* Typography is consistent.
+* Colors are consistent.
+* Spacing is consistent.
+* Cards and sections feel cohesive.
+* Mobile experience is intentionally designed.
+* Accessibility has been considered.
+* The application has been visually checked in the browser.
+* Major visual inconsistencies have been corrected.
+* No unnecessary framework/architecture rewrite was introduced.
+
+---
+
+# FINAL INSTRUCTION
+
+Do not treat this task as:
+
+> "Make my website look somewhat like Apsara."
+
+Treat it as:
+
+> **"Perform a complete professional UI/UX redesign of my existing website using Apsara Official as the primary visual reference, while keeping every piece of my actual content, branding, data, business logic, routes, APIs, and functionality intact."**
+
+The reference website determines **HOW MY WEBSITE LOOKS**.
+
+My existing application determines **WHAT MY WEBSITE CONTAINS AND DOES**.
+
+That distinction is mandatory throughout the entire implementation.

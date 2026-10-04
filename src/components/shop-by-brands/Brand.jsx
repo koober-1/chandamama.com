@@ -13,22 +13,28 @@ const Brands = () => {
   const router = useLocalizedRouter();
   const brandsPerPage = 12;
   const city = useSelector((state) => state.City);
+  const setting = useSelector((state) => state.Setting?.setting);
+
+  const effectiveLat =
+    city?.city?.latitude || city?.latitude || setting?.default_city?.latitude || 23.242;
+  const effectiveLng =
+    city?.city?.longitude || city?.longitude || setting?.default_city?.longitude || 69.6669;
 
   const [brands, setBrands] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [totalBrands, setTotalBrands] = useState(0);
   const [page, setPage] = useState(1);
 
-  const language = useSelector(state => state.Language.selectedLanguage)
+  const language = useSelector(state => state.Language.selectedLanguage);
 
   useEffect(() => {
     setPage(1);
-  }, [city?.city?.latitude, city?.city?.longitude]);
+  }, [effectiveLat, effectiveLng]);
 
   useEffect(() => {
     const offset = (page - 1) * brandsPerPage;
     fetchBrands(offset);
-  }, [page, city,language?.id]);
+  }, [page, effectiveLat, effectiveLng, language?.id]);
 
   const fetchBrands = async (offset = 0) => {
     setIsLoading(true);
@@ -36,11 +42,11 @@ const Brands = () => {
       const response = await api.getBrands({
         limit: brandsPerPage,
         offset,
-        latitude: city?.city?.latitude,
-        longitude: city?.city?.longitude,
+        latitude: effectiveLat,
+        longitude: effectiveLng,
       });
       setBrands(response.data || []);
-      setTotalBrands(response?.total || 0); // Assuming total count is in response.data.total
+      setTotalBrands(response?.total || 0);
     } catch (error) {
       console.log("Error fetching brands:", error);
     }

@@ -27,16 +27,43 @@ const CountrySlider = ({ countries }) => {
     const language = useSelector(state => state.Language.selectedLanguage)
 
     return (
-        <section>
-            <div className='container feature-section'>
+        <section className="py-6 md:py-10">
+            <div className='container mx-auto px-4 feature-section'>
                 <div className='flex flex-col gap-3' dir={language?.type}>
-                    <div className='flex justify-between items-center'>
-                        <h2 className='textColor text-xl sm:text-3xl font-extrabold tracking-[2px] leading-[29px] m-0'>{t("shop_by")} {t("countries")} </h2>
-                        <div className='flex gap-4 items-center flex-col md:flex-row text-nowrap'>
-                            <Link href={"/countries"} className='hover:primaryColor'>{t("see_all")}</Link>
-                            <div className={` md:flex hidden gap-2 ${language?.type == "RTL" ? "flex-row-reverse" : ""}`}>
-                                <button className=' group swiperBorderColor rounded-full p-2 country-prev hover:primaryBackColor hover:text-white hover:primaryBorder'><IoMdArrowBack className='swiperNavButtonColor group-hover:text-white transition-colors duration-200' size={20} /></button>
-                                <button className=' group swiperBorderColor rounded-full p-2 country-next hover:primaryBackColor hover:text-white hover:primaryBorder'><IoMdArrowForward className='swiperNavButtonColor group-hover:text-white transition-colors duration-200' size={20} /></button>
+                    {/* CHANDAMAMA Official Section Header */}
+                    <div className="relative border-b-2 border-[#0BADFB]/30 dark:border-[#0BADFB]/40 mb-8 pb-0">
+                        <div className="flex flex-wrap items-end justify-between gap-4">
+                            <div className="flex flex-wrap items-baseline gap-3 md:gap-4">
+                                <span className="inline-block bg-[#FDD811] text-slate-900 font-extrabold text-xs sm:text-sm md:text-base uppercase tracking-wider px-5 sm:px-6 py-2 sm:py-2.5 rounded-t-xl shadow-2xs">
+                                    {t("shop_by")} {t("countries")}
+                                </span>
+                                <span className="text-slate-600 dark:text-slate-300 text-xs sm:text-sm font-medium pb-2">
+                                    {t("products_by_country_of_origin") || "Authentic imports by country of origin"}
+                                </span>
+                            </div>
+
+                            <div className="flex items-center gap-3 pb-2">
+                                <Link 
+                                    href={"/countries"} 
+                                    className="flex items-center gap-1 px-4 py-1.5 rounded-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-[#0BADFB] hover:text-[#0BADFB] transition-all shadow-2xs cursor-pointer"
+                                >
+                                    {t("see_all")}
+                                    <span className="text-xs">→</span>
+                                </Link>
+                                <div className={`hidden md:flex items-center gap-1.5 ${language?.type == "RTL" ? "flex-row-reverse" : ""}`}>
+                                    <button 
+                                        className="w-8 h-8 rounded-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-[#0BADFB] hover:border-[#0BADFB] hover:text-white text-slate-700 dark:text-slate-200 shadow-2xs flex items-center justify-center transition-all cursor-pointer country-prev"
+                                        aria-label="Previous countries"
+                                    >
+                                        <IoMdArrowBack size={16} />
+                                    </button>
+                                    <button 
+                                        className="w-8 h-8 rounded-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-[#0BADFB] hover:border-[#0BADFB] hover:text-white text-slate-700 dark:text-slate-200 shadow-2xs flex items-center justify-center transition-all cursor-pointer country-next"
+                                        aria-label="Next countries"
+                                    >
+                                        <IoMdArrowForward size={16} />
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>

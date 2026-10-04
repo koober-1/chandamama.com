@@ -2,17 +2,10 @@ import React, { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
 import { t } from "@/utils/translation";
 import { RiCloseFill } from "react-icons/ri";
-import { GoogleMap, MarkerF, useJsApiLoader } from "@react-google-maps/api";
 import * as api from "@/api/apiRoutes";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { BiCurrentLocation } from "react-icons/bi";
-import Loader from "../loader/Loader";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
-import { darkThemeStyles } from "@/utils/mapColor";
-import { MAP_CONFIG } from "@/utils/mapConfig";
-
-
 
 const NewAddressModal = ({
   showAddAddres,
@@ -22,13 +15,11 @@ const NewAddressModal = ({
 }) => {
   const addresses = useSelector((state) => state.Addresses);
   const city = useSelector((state) => state.City.city);
-  const theme = useSelector((state) => state.Theme.theme);
-  const [addressLoading, setAddressLoading] = useState("");
   const [loading, setLoading] = useState(false);
-  const [center, setCenter] = useState();
   const [addressDetails, setaddressDetails] = useState({
     name: "",
     mobile_num: "",
+    email: "",
     alternate_mobile_num: "",
     address: "",
     landmark: "",
@@ -41,74 +32,28 @@ const NewAddressModal = ({
     is_default: true,
   });
 
-  const { isLoaded } = useJsApiLoader(MAP_CONFIG);
-  const [localLocation, setlocalLocation] = useState({
-    city: "",
-    formatted_address: "",
-    lat: parseFloat(0),
-    lng: parseFloat(0),
-  });
-
-  useEffect(() => {
-    navigator.geolocation.getCurrentPosition((position) => {
-      const lat = position.coords.latitude;
-      const lng = position.coords.longitude;
-      setlocalLocation({ lat: lat, lng: lng });
-    });
-  }, [showAddAddres]);
-
-  useEffect(() => {
-    const center = {
-      lat: localLocation.lat,
-      lng: localLocation.lng,
-      streetViewControl: false,
-    };
-    setCenter(center);
-  }, [localLocation.lat, localLocation.lng]);
-
-  useEffect(() => {
-    if (isLoaded && addressDetails.address !== "") {
-      const geocoder = new window.google.maps.Geocoder();
-      const fullAddress = `${addressDetails.address}, ${addressDetails.city}, ${addressDetails.state}, ${addressDetails.country}`;
-      geocoder.geocode({ address: fullAddress }, (results, status) => {
-        if (status === "OK") {
-          const location = results[0].geometry.location;
-          setlocalLocation({ lat: location.lat(), lng: location.lng() });
-        } else {
-          console.error(
-            "Geocode was not successful for the following reason:",
-            status,
-          );
-        }
-      });
-    }
-  }, [addressDetails,isLoaded]);
-
   useEffect(() => {
     if (isAddressSelected && addresses.selectedEditAddress) {
       setaddressDetails({
-        name: addresses.selectedEditAddress.name,
-        mobile_num: addresses.selectedEditAddress.mobile,
-        alternate_mobile_num: addresses.selectedEditAddress.alternate_mobile,
-        address: addresses.selectedEditAddress.address,
-        landmark: addresses.selectedEditAddress.landmark,
-        city: addresses.selectedEditAddress.city,
-        area: addresses.selectedEditAddress.area,
-        pincode: addresses.selectedEditAddress.pincode,
-        state: addresses.selectedEditAddress.country,
-        country: addresses.selectedEditAddress.country,
-        address_type: addresses.selectedEditAddress.type,
-        is_default:
-          addresses.selectedEditAddress.is_default === 1 ? true : false,
+        name: addresses.selectedEditAddress.name || "",
+        mobile_num: addresses.selectedEditAddress.mobile || "",
+        email: addresses.selectedEditAddress.email || "",
+        alternate_mobile_num: addresses.selectedEditAddress.alternate_mobile || "",
+        address: addresses.selectedEditAddress.address || "",
+        landmark: addresses.selectedEditAddress.landmark || "",
+        city: addresses.selectedEditAddress.city || "",
+        area: addresses.selectedEditAddress.area || "",
+        pincode: addresses.selectedEditAddress.pincode || "",
+        state: addresses.selectedEditAddress.state || addresses.selectedEditAddress.country || "",
+        country: addresses.selectedEditAddress.country || "",
+        address_type: addresses.selectedEditAddress.type || "Home",
+        is_default: addresses.selectedEditAddress.is_default === 1,
       });
     } else {
-      setlocalLocation({
-        lat: parseFloat(city?.city ? city?.city?.latitude : 0),
-        lng: parseFloat(city?.city ? city?.city?.longitude : 0),
-      });
       setaddressDetails({
         name: "",
         mobile_num: "",
+        email: "",
         alternate_mobile_num: "",
         address: "",
         landmark: "",
@@ -125,13 +70,15 @@ const NewAddressModal = ({
 
   const handleConfirmAddress = async (e) => {
     e.preventDefault();
-    let lat = center.lat;
-    let lng = center.lng;
-    if (!isAddressSelected) {
-      setLoading(true);
-      const response = await api.addAddress({
+    const lat = parseFloat(city?.latitude || city?.city?.latitude || 22.7196);
+    const lng = parseFloat(city?.longitude || city?.city?.longitude || 75.8577);
+
+    setLoading(true);
+    try {
+      const payload = {
         name: addressDetails.name,
         mobile: addressDetails.mobile_num,
+        email: addressDetails.email,
         type: addressDetails.address_type,
         address: addressDetails.address,
         landmark: addressDetails.landmark,
@@ -141,59 +88,36 @@ const NewAddressModal = ({
         state: addressDetails.state,
         country: addressDetails.country,
         alternate_mobile: addressDetails.alternate_mobile_num,
+        latitude: lat,
         latitiude: lat,
         longitude: lng,
         is_default: addressDetails.is_default,
-      });
-      if (response.status == 1) {
-        fetchAddress();
-        setLoading(false);
-        toast.success(t("address_added_success"));
+      };
+
+      if (!isAddressSelected) {
+        const response = await api.addAddress(payload);
+        if (response.status === 1) {
+          fetchAddress();
+          toast.success(t("address_added_success") || "Address Added Successfully!");
+          handleHideAddressModal();
+        } else {
+          toast.error(response?.message || "Failed to add address");
+        }
       } else {
-        setLoading(false);
+        payload.id = addresses.selectedEditAddress.id;
+        const response = await api.updateAddress(payload);
+        if (response.status === 1) {
+          toast.success("Successfully Updated Address!");
+          fetchAddress();
+          handleHideAddressModal();
+        } else {
+          toast.error(response?.message || "Failed to update address");
+        }
       }
-      setaddressDetails({
-        name: "",
-        mobile_num: "",
-        alternate_mobile_num: "",
-        address: "",
-        landmark: "",
-        city: "",
-        area: "",
-        pincode: "",
-        state: "",
-        country: "",
-        address_type: "Home",
-        is_default: false,
-      });
-      setShowAddAddres(false);
-    } else {
-      setLoading(true);
-      const response = await api.updateAddress({
-        id: addresses.selectedEditAddress.id,
-        name: addressDetails.name,
-        mobile: addressDetails.mobile_num,
-        type: addressDetails.address_type,
-        address: addressDetails.address,
-        landmark: addressDetails.landmark,
-        area: addressDetails.area,
-        pincode: addressDetails.pincode,
-        city: addressDetails.city,
-        state: addressDetails.state,
-        country: addressDetails.country,
-        alternate_mobile: addressDetails.alternate_mobile_num,
-        latitiude: lat,
-        longitude: lng,
-        is_default: addressDetails.is_default,
-      });
-      if (response.status === 1) {
-        toast.success("Succesfully Updated Address!");
-        fetchAddress();
-        setShowAddAddres(false);
-        setLoading(false);
-      } else {
-        setLoading(false);
-      }
+    } catch (error) {
+      console.log("Error saving address", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -201,6 +125,7 @@ const NewAddressModal = ({
     setaddressDetails({
       name: "",
       mobile_num: "",
+      email: "",
       alternate_mobile_num: "",
       address: "",
       landmark: "",
@@ -215,192 +140,10 @@ const NewAddressModal = ({
     setShowAddAddres(false);
   };
 
-  const onMarkerDragStart = () => {
-    setAddressLoading(true);
-  };
-
-  const onMarkerDragEnd = (e) => {
-    const prev_latlng = {
-      lat: localLocation.lat,
-      lng: localLocation.lng,
-    };
-    const geocoder = new window.google.maps.Geocoder();
-
-    geocoder
-      .geocode({
-        location: {
-          lat: e.latLng.lat(),
-          lng: e.latLng.lng(),
-        },
-      })
-      .then((response) => {
-        if (response.results[0]) {
-          setlocalLocation({
-            lat: parseFloat(response.results[0].geometry.location.lat()),
-            lng: parseFloat(response.results[0].geometry.location.lng()),
-          });
-
-          let address = "",
-            country = "",
-            pincode = "",
-            landmark = "",
-            area = "",
-            state_ = "",
-            city = "";
-          response.results[0].address_components.forEach((res_add) => {
-            if (
-              res_add.types.includes("premise") ||
-              res_add.types.includes("plus_code") ||
-              res_add.types.includes("route")
-            ) {
-              address = res_add.long_name;
-            }
-            if (res_add.types.includes("political")) {
-              landmark = res_add.long_name;
-            }
-            if (
-              res_add.types.includes("administrative_area_level_3") ||
-              res_add.types.includes("administrative_area_level_2") ||
-              res_add.types.includes("sublocality")
-            ) {
-              area = res_add.long_name;
-            }
-            if (res_add.types.includes("administrative_area_level_1")) {
-              state_ = res_add.long_name;
-            }
-            if (res_add.types.includes("country")) {
-              country = res_add.long_name;
-            }
-            if (res_add.types.includes("postal_code")) {
-              pincode = res_add.long_name;
-            }
-            if (res_add.types.includes("locality")) {
-              city = res_add.long_name;
-            }
-          });
-
-          if (address === "" || area === "") {
-            setlocalLocation({
-              lat: prev_latlng.lat,
-              lng: prev_latlng.lng,
-            });
-          } else {
-            setaddressDetails((state) => ({
-              ...state,
-              address: address,
-              landmark: landmark,
-              city: city,
-              area: area,
-              pincode: pincode,
-              country: country,
-              state: state_,
-            }));
-          }
-          setAddressLoading(false);
-        } else {
-        }
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
-
-  const mapContainerStyle = {
-    width: "100%",
-    height: window.innerWidth > 990 ? "700px" : "400px",
-  };
-
-  const handleCurrentLocationClick = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const latLng = {
-            lat: parseFloat(position.coords.latitude),
-            lng: parseFloat(position.coords.longitude),
-          };
-          setCenter(latLng);
-          setlocalLocation(latLng);
-
-          const geocoder = new window.google.maps.Geocoder();
-          geocoder
-            .geocode({
-              location: latLng,
-            })
-            .then((response) => {
-              if (response.results[0]) {
-                let address = "",
-                  country = "",
-                  pincode = "",
-                  landmark = "",
-                  area = "",
-                  state_ = "",
-                  city = "";
-                response.results[0].address_components.forEach((res_add) => {
-                  if (
-                    res_add.types.includes("premise") ||
-                    res_add.types.includes("plus_code") ||
-                    res_add.types.includes("route")
-                  ) {
-                    address = res_add.long_name;
-                  }
-                  if (res_add.types.includes("political")) {
-                    landmark = res_add.long_name;
-                  }
-                  if (
-                    res_add.types.includes("administrative_area_level_3") ||
-                    res_add.types.includes("administrative_area_level_2") ||
-                    res_add.types.includes("sublocality")
-                  ) {
-                    area = res_add.long_name;
-                  }
-                  if (res_add.types.includes("administrative_area_level_1")) {
-                    state_ = res_add.long_name;
-                  }
-                  if (res_add.types.includes("country")) {
-                    country = res_add.long_name;
-                  }
-                  if (res_add?.types?.includes("postal_code")) {
-                    pincode = res_add?.long_name;
-                  }
-                  if (res_add.types.includes("locality")) {
-                    city = res_add.long_name;
-                  }
-                });
-                setaddressDetails((state) => ({
-                  ...state,
-                  address: address,
-                  landmark: landmark,
-                  city: city,
-                  area: area,
-                  pincode: pincode,
-                  country: country,
-                  state: state_,
-                }));
-              } else {
-                console.log("No result found");
-              }
-            })
-            .catch((error) => {
-              console.log(error);
-            });
-        },
-        (error) => {
-          console.error("Error detecting location", error);
-        },
-        {
-          // FIX: Crucial for mobile devices to get an actual GPS lock
-          enableHighAccuracy: true,
-          timeout: 5000,
-          maximumAge: 0,
-        },
-      );
-    } else {
-      console.log("geolocation not present in navigator");
-    }
-  };
-
   const handleSetAddressType = (value) => {
-    setaddressDetails((state) => ({ ...state, address_type: value }));
+    if (value) {
+      setaddressDetails((state) => ({ ...state, address_type: value }));
+    }
   };
 
   const handleCheckboxChange = (e) => {
@@ -411,262 +154,265 @@ const NewAddressModal = ({
   };
 
   return (
-    <Dialog open={showAddAddres}> 
-      <DialogContent className="max-w-5xl overflow-y-scroll md:overflow-hidden h-full md:h-auto">
-        <DialogHeader>
+    <Dialog open={showAddAddres}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl bg-white p-6 md:p-8 shadow-2xl border border-slate-200/80">
+        <DialogHeader className="border-b border-slate-100 pb-4 mb-4">
           <div className="flex flex-row justify-between items-center">
-            <h2 className="font-bold text-xl">{t("new_address")}</h2>
-            <div className="closeButtonBg rounded-full p-[8px] gap-[4px] cursor-pointer">
-              <RiCloseFill size={22} onClick={() => handleHideAddressModal()} />
+            <div>
+              <h2 className="font-bold text-xl md:text-2xl text-slate-900 tracking-tight">
+                {isAddressSelected ? t("edit_address") || "Edit Address" : t("new_address") || "New Address"}
+              </h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Fill in your contact and delivery address details below
+              </p>
             </div>
+            <button
+              onClick={() => handleHideAddressModal()}
+              type="button"
+              className="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-colors cursor-pointer"
+            >
+              <RiCloseFill size={22} />
+            </button>
           </div>
         </DialogHeader>
-        <div className="p-2 ">
-          <div className="flex gap-5 flex-col md:flex-row">
-            <div className="w-full md:w-1/2 relative">
-              <div
-                className="absolute z-50 top-[10px] right-14 bg-white p-[10px] cursor-pointer text-black"
-                onClick={handleCurrentLocationClick}
-              >
-                <BiCurrentLocation size={20} className=" " />
-              </div>
-              {isLoaded ? <GoogleMap
-                streetViewControl={false}
-                tilt={true}
-                options={{
-                  streetViewControl: false,
-                  styles: theme == "dark" ? darkThemeStyles : [],
-                }}
-                zoom={11}
-                center={center}
-                mapContainerStyle={mapContainerStyle}
-                className="h-full"
-              >
-                <MarkerF
-                  position={center}
-                  draggable={true}
-                  onDragStart={onMarkerDragStart}
-                  onDragEnd={onMarkerDragEnd}
+
+        <form className="flex flex-col gap-5" onSubmit={handleConfirmAddress}>
+          {/* Section 1: Contact Details */}
+          <div>
+            <h4 className="font-bold text-xs uppercase tracking-wider text-slate-500 mb-2.5">
+              {t("contact_details") || "Contact Details"}
+            </h4>
+            <div className="flex flex-col gap-3">
+              <input
+                type="text"
+                placeholder={`${t("name") || "Full Name"} *`}
+                className="w-full outline-none border border-slate-200 focus:border-[#0BADFB] focus:ring-1 focus:ring-[#0BADFB] px-4 py-2.5 rounded-xl text-sm text-slate-800 bg-slate-50/50 transition-all"
+                value={addressDetails.name}
+                onChange={(e) =>
+                  setaddressDetails((state) => ({
+                    ...state,
+                    name: e.target.value,
+                  }))
+                }
+                required
+              />
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <input
+                  type="text"
+                  placeholder={`${t("mobileNumber") || "Mobile Number"} *`}
+                  className="w-full outline-none border border-slate-200 focus:border-[#0BADFB] focus:ring-1 focus:ring-[#0BADFB] px-4 py-2.5 rounded-xl text-sm text-slate-800 bg-slate-50/50 transition-all"
+                  value={addressDetails.mobile_num}
+                  onChange={(e) =>
+                    setaddressDetails((state) => ({
+                      ...state,
+                      mobile_num: e.target.value,
+                    }))
+                  }
+                  required
                 />
-              </GoogleMap> : <Loader />}
-            </div>
-            <div className="w-full md:w-1/2 h-full">
-              {addressLoading ? (
-                <div className="flex items-center justify-center">
-                  <Loader
-                    width={Math.min(300, window.innerWidth - 40)}
-                    height={Math.min(300, window.innerWidth - 40)}
-                  />
-                </div>
-              ) : (
-                <div className="flex flex-col">
-                  <form
-                    className="flex flex-col gap-5"
-                    onSubmit={handleConfirmAddress}
-                  >
-                    <div className="flex flex-col gap-2">
-                      <h1>{t("contact_details")}</h1>
-                      <div className="flex flex-col gap-2">
-                        <input
-                          type="text"
-                          placeholder={t("name")}
-                          className="w-full outline-none cardBorder p-1 rounded-sm"
-                          value={addressDetails.name}
-                          onChange={(e) =>
-                            setaddressDetails((state) => ({
-                              ...state,
-                              name: e.target.value,
-                            }))
-                          }
-                          required
-                        />
-                        <input
-                          type="number"
-                          placeholder={t("mobileNumber")}
-                          className="w-full outline-none cardBorder p-1 rounded-sm"
-                          value={addressDetails.mobile_num}
-                          onChange={(e) =>
-                            setaddressDetails((state) => ({
-                              ...state,
-                              mobile_num: e.target.value,
-                            }))
-                          }
-                          required
-                        />
-                        <input
-                          type="number"
-                          placeholder={t("alt_mobile_no")}
-                          className="w-full outline-none cardBorder p-1 rounded-sm"
-                          value={addressDetails.alternate_mobile_num}
-                          onChange={(e) =>
-                            setaddressDetails((state) => ({
-                              ...state,
-                              alternate_mobile_num: e.target.value,
-                            }))
-                          }
-                        />
-                      </div>
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <h1>{t("address_details")}</h1>
-                      <input
-                        type="text"
-                        placeholder={t("address")}
-                        className="w-full outline-none cardBorder p-1 rounded-sm"
-                        value={addressDetails.address}
-                        onChange={(e) =>
-                          setaddressDetails((state) => ({
-                            ...state,
-                            address: e.target.value,
-                          }))
-                        }
-                        required
-                      />
-                      <input
-                        type="text"
-                        placeholder={t("enter_landmark")}
-                        className="w-full outline-none cardBorder p-1 rounded-sm"
-                        value={addressDetails.landmark}
-                        onChange={(e) =>
-                          setaddressDetails((state) => ({
-                            ...state,
-                            landmark: e.target.value,
-                          }))
-                        }
-                        required
-                      />
-                      <input
-                        type="text"
-                        placeholder={t("enter_area")}
-                        className="w-full outline-none cardBorder p-1 rounded-sm"
-                        value={addressDetails.area}
-                        onChange={(e) =>
-                          setaddressDetails((state) => ({
-                            ...state,
-                            area: e.target.value,
-                          }))
-                        }
-                        required
-                      />
-                      <input
-                        type="text"
-                        placeholder={t("enter_pincode")}
-                        className="w-full outline-none cardBorder p-1 rounded-sm"
-                        value={addressDetails.pincode}
-                        onChange={(e) =>
-                          setaddressDetails((state) => ({
-                            ...state,
-                            pincode: e.target.value,
-                          }))
-                        }
-                        required
-                      />
-                      <input
-                        type="text"
-                        placeholder={t("enter_city")}
-                        className="w-full outline-none cardBorder p-1 rounded-sm"
-                        value={addressDetails.city}
-                        onChange={(e) =>
-                          setaddressDetails((state) => ({
-                            ...state,
-                            city: e.target.value,
-                          }))
-                        }
-                        required
-                      />
-                      <input
-                        type="text"
-                        placeholder={t("enter_state")}
-                        className="w-full outline-none cardBorder p-1 rounded-sm"
-                        value={addressDetails.state}
-                        onChange={(e) =>
-                          setaddressDetails((state) => ({
-                            ...state,
-                            state: e.target.value,
-                          }))
-                        }
-                        required
-                      />
-                      <input
-                        type="text"
-                        placeholder={t("enter_country")}
-                        className="w-full outline-none cardBorder p-1 rounded-sm"
-                        value={addressDetails.country}
-                        onChange={(e) =>
-                          setaddressDetails((state) => ({
-                            ...state,
-                            country: e.target.value,
-                          }))
-                        }
-                        required
-                      />
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <h1>{t("address_type")}</h1>
-                      <div className="flex gap-1">
-                        <ToggleGroup type="single">
-                          <ToggleGroupItem
-                            value="Home"
-                            className={`rounded-sm p-2 ${
-                              addressDetails.address_type == "Home"
-                                ? "text-white primaryBackColor"
-                                : ""
-                            }`}
-                            onClick={() => handleSetAddressType("Home")}
-                          >
-                            <h1>{t("adress_type_home")}</h1>
-                          </ToggleGroupItem>
-                          <ToggleGroupItem
-                            value="Office"
-                            className={`rounded-sm p-2 ${
-                              addressDetails.address_type == "Office"
-                                ? "text-white primaryBackColor"
-                                : ""
-                            }`}
-                            onClick={() => handleSetAddressType("Office")}
-                          >
-                            <h1>{t("address_type_office")}</h1>
-                          </ToggleGroupItem>
-                          <ToggleGroupItem
-                            value="Other"
-                            className={`rounded-sm p-2 ${
-                              addressDetails.address_type == "Other"
-                                ? "text-white primaryBackColor"
-                                : ""
-                            }`}
-                            onClick={() => handleSetAddressType("Other")}
-                          >
-                            <h1>{t("address_type_other")}</h1>
-                          </ToggleGroupItem>
-                        </ToggleGroup>
-                      </div>
-                      <div className="flex gap-2 mt-2">
-                        <input
-                          type="checkbox"
-                          name=""
-                          id=""
-                          checked={addressDetails.is_default}
-                          value={addressDetails.is_default}
-                          onChange={handleCheckboxChange}
-                        />
-                        <p className="font-bold text-sm">
-                          {t("set_as_default_address")}
-                        </p>
-                      </div>
-                    </div>
-                    <button
-                      type="submit"
-                      className="primaryBackColor rounded-sm text-white p-2 font-bold disabled:bg-slate-500"
-                      disabled={loading}
-                    >
-                      {loading ? t("loading") : t("confirm_location")}
-                    </button>
-                  </form>
-                </div>
-              )}
+                <input
+                  type="email"
+                  placeholder={t("email") || "Email Address"}
+                  className="w-full outline-none border border-slate-200 focus:border-[#0BADFB] focus:ring-1 focus:ring-[#0BADFB] px-4 py-2.5 rounded-xl text-sm text-slate-800 bg-slate-50/50 transition-all"
+                  value={addressDetails.email}
+                  onChange={(e) =>
+                    setaddressDetails((state) => ({
+                      ...state,
+                      email: e.target.value,
+                    }))
+                  }
+                />
+              </div>
+
+              <input
+                type="text"
+                placeholder={t("alt_mobile_no") || "Alternative Phone (Optional)"}
+                className="w-full outline-none border border-slate-200 focus:border-[#0BADFB] focus:ring-1 focus:ring-[#0BADFB] px-4 py-2.5 rounded-xl text-sm text-slate-800 bg-slate-50/50 transition-all"
+                value={addressDetails.alternate_mobile_num}
+                onChange={(e) =>
+                  setaddressDetails((state) => ({
+                    ...state,
+                    alternate_mobile_num: e.target.value,
+                  }))
+                }
+              />
             </div>
           </div>
-        </div>
+
+          {/* Section 2: Address Details */}
+          <div>
+            <h4 className="font-bold text-xs uppercase tracking-wider text-slate-500 mb-2.5">
+              {t("address_details") || "Address Details"}
+            </h4>
+            <div className="flex flex-col gap-3">
+              <input
+                type="text"
+                placeholder={`${t("address") || "Address (House/Flat No., Street, Building)"} *`}
+                className="w-full outline-none border border-slate-200 focus:border-[#0BADFB] focus:ring-1 focus:ring-[#0BADFB] px-4 py-2.5 rounded-xl text-sm text-slate-800 bg-slate-50/50 transition-all"
+                value={addressDetails.address}
+                onChange={(e) =>
+                  setaddressDetails((state) => ({
+                    ...state,
+                    address: e.target.value,
+                  }))
+                }
+                required
+              />
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <input
+                  type="text"
+                  placeholder={`${t("enter_landmark") || "Landmark"} *`}
+                  className="w-full outline-none border border-slate-200 focus:border-[#0BADFB] focus:ring-1 focus:ring-[#0BADFB] px-4 py-2.5 rounded-xl text-sm text-slate-800 bg-slate-50/50 transition-all"
+                  value={addressDetails.landmark}
+                  onChange={(e) =>
+                    setaddressDetails((state) => ({
+                      ...state,
+                      landmark: e.target.value,
+                    }))
+                  }
+                  required
+                />
+                <input
+                  type="text"
+                  placeholder={`${t("enter_area") || "Area / Locality"} *`}
+                  className="w-full outline-none border border-slate-200 focus:border-[#0BADFB] focus:ring-1 focus:ring-[#0BADFB] px-4 py-2.5 rounded-xl text-sm text-slate-800 bg-slate-50/50 transition-all"
+                  value={addressDetails.area}
+                  onChange={(e) =>
+                    setaddressDetails((state) => ({
+                      ...state,
+                      area: e.target.value,
+                    }))
+                  }
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <input
+                  type="text"
+                  placeholder={`${t("enter_pincode") || "Pincode"} *`}
+                  className="w-full outline-none border border-slate-200 focus:border-[#0BADFB] focus:ring-1 focus:ring-[#0BADFB] px-4 py-2.5 rounded-xl text-sm text-slate-800 bg-slate-50/50 transition-all"
+                  value={addressDetails.pincode}
+                  onChange={(e) =>
+                    setaddressDetails((state) => ({
+                      ...state,
+                      pincode: e.target.value,
+                    }))
+                  }
+                  required
+                />
+                <input
+                  type="text"
+                  placeholder={`${t("enter_city") || "City"} *`}
+                  className="w-full outline-none border border-slate-200 focus:border-[#0BADFB] focus:ring-1 focus:ring-[#0BADFB] px-4 py-2.5 rounded-xl text-sm text-slate-800 bg-slate-50/50 transition-all"
+                  value={addressDetails.city}
+                  onChange={(e) =>
+                    setaddressDetails((state) => ({
+                      ...state,
+                      city: e.target.value,
+                    }))
+                  }
+                  required
+                />
+                <input
+                  type="text"
+                  placeholder={`${t("enter_state") || "State"} *`}
+                  className="w-full outline-none border border-slate-200 focus:border-[#0BADFB] focus:ring-1 focus:ring-[#0BADFB] px-4 py-2.5 rounded-xl text-sm text-slate-800 bg-slate-50/50 transition-all"
+                  value={addressDetails.state}
+                  onChange={(e) =>
+                    setaddressDetails((state) => ({
+                      ...state,
+                      state: e.target.value,
+                    }))
+                  }
+                  required
+                />
+              </div>
+
+              <input
+                type="text"
+                placeholder={`${t("enter_country") || "Country"} *`}
+                className="w-full outline-none border border-slate-200 focus:border-[#0BADFB] focus:ring-1 focus:ring-[#0BADFB] px-4 py-2.5 rounded-xl text-sm text-slate-800 bg-slate-50/50 transition-all"
+                value={addressDetails.country}
+                onChange={(e) =>
+                  setaddressDetails((state) => ({
+                    ...state,
+                    country: e.target.value,
+                  }))
+                }
+                required
+              />
+            </div>
+          </div>
+
+          {/* Section 3: Address Type */}
+          <div>
+            <h4 className="font-bold text-xs uppercase tracking-wider text-slate-500 mb-2.5">
+              {t("address_type") || "Address Type"}
+            </h4>
+            <div className="flex gap-2">
+              <ToggleGroup
+                type="single"
+                value={addressDetails.address_type}
+                onValueChange={handleSetAddressType}
+              >
+                <ToggleGroupItem
+                  value="Home"
+                  className={`rounded-full px-5 py-2 text-xs font-bold border transition-all cursor-pointer ${
+                    addressDetails.address_type === "Home"
+                      ? "bg-[#0BADFB] text-white border-[#0BADFB] shadow-xs"
+                      : "bg-white text-slate-700 border-slate-200 hover:border-slate-300"
+                  }`}
+                >
+                  <span>{t("adress_type_home") || "Home"}</span>
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="Office"
+                  className={`rounded-full px-5 py-2 text-xs font-bold border transition-all cursor-pointer ${
+                    addressDetails.address_type === "Office"
+                      ? "bg-[#0BADFB] text-white border-[#0BADFB] shadow-xs"
+                      : "bg-white text-slate-700 border-slate-200 hover:border-slate-300"
+                  }`}
+                >
+                  <span>{t("address_type_office") || "Office"}</span>
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="Other"
+                  className={`rounded-full px-5 py-2 text-xs font-bold border transition-all cursor-pointer ${
+                    addressDetails.address_type === "Other"
+                      ? "bg-[#0BADFB] text-white border-[#0BADFB] shadow-xs"
+                      : "bg-white text-slate-700 border-slate-200 hover:border-slate-300"
+                  }`}
+                >
+                  <span>{t("address_type_other") || "Other"}</span>
+                </ToggleGroupItem>
+              </ToggleGroup>
+            </div>
+
+            <label className="flex items-center gap-2 mt-4 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                className="w-4 h-4 rounded text-[#0BADFB] focus:ring-[#0BADFB] border-slate-300"
+                checked={addressDetails.is_default}
+                onChange={handleCheckboxChange}
+              />
+              <span className="font-semibold text-xs text-slate-700">
+                {t("set_as_default_address") || "Set as default address"}
+              </span>
+            </label>
+          </div>
+
+          {/* Submit Button */}
+          <button
+            type="submit"
+            className="w-full mt-3 py-3.5 rounded-full bg-[#0BADFB] hover:bg-[#0298e0] text-white font-extrabold text-sm tracking-wide shadow-md shadow-[#0BADFB]/20 transition-all cursor-pointer active:scale-98 disabled:opacity-50"
+            disabled={loading}
+          >
+            {loading ? t("loading") || "Saving..." : t("save") || "Save Address"}
+          </button>
+        </form>
       </DialogContent>
     </Dialog>
   );

@@ -76,7 +76,7 @@ const VerticleProductCard = ({ product, largeImage = false }) => {
     }));
   };
 
-  // cart functionality
+  // Cart functionality
   const addToCart = async (productId, productVId, qty) => {
     try {
       const response = await api.addToCart({
@@ -173,7 +173,6 @@ const VerticleProductCard = ({ product, largeImage = false }) => {
           ) {
             return { ...product, qty: Qty };
           } else {
-            // dispatch(addGuestCartTotal({ data: finalPrice }));
             return product;
           }
         });
@@ -196,12 +195,12 @@ const VerticleProductCard = ({ product, largeImage = false }) => {
       } else if (flag == "remove") {
         dispatch(subGuestCartTotal({ data: finalPrice }));
       }
-      // dispatch(addGuestCartTotal({ data: finalPrice }))
       const productData = {
         product_id: productId,
         product_variant_id: productVariantId,
         qty: Qty,
         productPrice: finalPrice,
+        color_variant: selectedVariant?.color_variant || selectedVariant?.color_name || selectedVariant?.color_code || selectedVariant?.color || '',
       };
       dispatch(addtoGuestCart({ data: [...cart?.guestCart, productData] }));
     }
@@ -470,156 +469,162 @@ const VerticleProductCard = ({ product, largeImage = false }) => {
     selectedVariant?.status == 0 ||
     product?.status == 0;
 
+  const catName = product?.category?.name || product?.category_name || "";
+
   return (
-    <div>
-      <LocalizedLink
-        href={`/product/${product?.slug}`}
-        className="flex flex-col p-2 cardBorder group  headerBackgroundColor textColor cardBorder hover:shadow-lg [.image-card_&]:rounded-none [.cardBorder_&]:rounded-none rounded-md"
-      >
-        <div className="flex relative textColor">
-          <div className="relative aspect-square w-full h-48 [.verticle-card_&]:h-44 [.image-card_&]:h-64 [.verticle-card_&]:md:h-72">
-            <ImageWithPlaceholder
-              className="rounded-lg object-cover h-full w-full " 
-              alt={product?.translations?.name ?? product?.name}
-              src={product?.image_url}
-              width={300}
-              height={300}
-              priority={true}
-            />
+    <div className="w-full">
+      <div className="group relative flex flex-col bg-white dark:bg-slate-800 rounded-[20px] border border-slate-200/90 dark:border-slate-700/80 p-3.5 md:p-4 shadow-sm hover:shadow-xl hover:shadow-cyan-900/5 hover:border-[#0BADFB] transition-all duration-300 hover:-translate-y-1.5 h-full justify-between">
+        <div>
+          {/* Image Canvas with Discount Tag & Floating Quick Action Icons */}
+          <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden bg-gradient-to-b from-slate-50 to-white dark:from-slate-800 dark:to-slate-900 p-3 flex items-center justify-center mb-3">
+            {/* Discount Badge at top-left */}
             {selectedVariant?.discounted_price !== 0 &&
-              selectedVariant?.discounted_price !== selectedVariant?.price ? (
-              <span className="bg-[#db3d26] rounded-[4px] text-white text-[14px] font-medium left-2 lg:left-4 leading-[16px] px-2 py-1 absolute text-center uppercase top-2 lg:top-4">
+            selectedVariant?.discounted_price !== selectedVariant?.price ? (
+              <span className="absolute top-2.5 left-2.5 bg-[#FDD811] text-slate-900 font-black text-[10px] sm:text-[11px] px-2.5 py-0.5 rounded-full shadow-2xs z-10 tracking-tight">
                 {calculateDiscount(
                   selectedVariant?.discounted_price,
                   selectedVariant?.price
                 ).toFixed(setting?.decimal_point ? setting?.decimal_point : 0)}
-                % {t("off")}
+                % {t("off") || "OFF"}
               </span>
             ) : null}
-            <ul className="absolute right-3 top-5 lg:flex flex-col gap-2 translate-x-3 group-hover:translate-x-0 opacity-0 group-hover:opacity-100 transition-all duration-500 ease-in-out hidden">
-              <li
-                className="buttonBorder hover:primaryBorder hover:primaryColor rounded-full h-[30px] w-[30px] flex justify-center items-center bodyBackgroundColor"
+
+            {/* Quick Actions (Wishlist & Quick View) at top-right */}
+            <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 z-10">
+              <button
+                type="button"
                 onClick={handleProductLikes}
+                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-2xs flex justify-center items-center text-slate-600 dark:text-slate-300 hover:text-rose-500 hover:scale-105 transition-all cursor-pointer"
+                aria-label="Wishlist"
               >
-                <span>
-                  {favoriteProducts &&
-                    favoriteProducts?.includes(product?.id) ? (
-                    <BiSolidHeart size={20} className="primaryFilledColor" />
-                  ) : (
-                    <BiHeart size={20} className="svgColors  hover:primaryColor" />
-                  )}
-                </span>
-              </li>
-              <li className="buttonBorder hover:primaryBorder hover:primaryColor rounded-full h-[30px] w-[30px] flex justify-center items-center bodyBackgroundColor">
-                <div onClick={handleShowDetailModal}>
-                  <GoEye size={20} className="svgColors  hover:primaryColor" />
-                </div>
-              </li>
-            </ul>
-          </div>
-        </div>
-        <div className="h-[100px] flex flex-col justify-between ">
-          <h3 className="flex textColor text-[16px] font-bold leading-[1.2] mt-3 max-h-[2.4em] overflow-hidden text-ellipsis capitalize w-full group-hover:primaryColor py-[2px]">
-            {product?.translations?.name ?? product?.name}
-          </h3>
-          {/* {selectedVariant?.few_quantity_left == true && (
-            <p className="text-sm text-red-600 font-semibold">{t("few_quantity_left")}</p>
-          )} */}
-          {product?.average_rating > 0 && product?.product_rating == true ? (
-            <div className="rating">
-              <div className="flex">
-                <div className="flex">
-                  {[1, 2, 3, 4, 5].map((star) => {
-                    return (
-                      <FaStar
-                        key={star}
-                        size={15}
-                        className={`${star <= parseInt(product?.average_rating)
-                          ? "fill-yellow-400 text-yellow-400"
-                          : "fill-gray-200 text-gray-200"
-                          }`}
-                      />
-                    );
-                  })}
-                </div>
-              </div>
+                {favoriteProducts && favoriteProducts?.includes(product?.id) ? (
+                  <BiSolidHeart size={16} className="text-rose-500" />
+                ) : (
+                  <BiHeart size={16} />
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={handleShowDetailModal}
+                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-2xs flex justify-center items-center text-slate-600 dark:text-slate-300 hover:text-[#0BADFB] hover:scale-105 transition-all cursor-pointer"
+                aria-label="Quick View"
+              >
+                <GoEye size={15} />
+              </button>
             </div>
-          ) : null}
-          <div className="flex">
+
+            {/* Product Image */}
+            <LocalizedLink
+              href={`/product/${product?.slug}`}
+              className="w-full h-full flex items-center justify-center"
+            >
+              <ImageWithPlaceholder
+                className="rounded-xl object-contain max-h-full max-w-full transition-transform duration-400 group-hover:scale-105"
+                alt={product?.translations?.name ?? product?.name}
+                src={product?.image_url}
+                width={280}
+                height={280}
+                priority={true}
+              />
+            </LocalizedLink>
+          </div>
+
+          {/* Product Category Muted Subtitle */}
+          <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-400 dark:text-slate-400 mb-1 px-0.5">
+            {catName ? (
+              <span className="uppercase tracking-wider truncate">
+                {catName}
+              </span>
+            ) : (
+              <span className="uppercase tracking-wider opacity-0">.</span>
+            )}
+          </div>
+
+          {/* Product Title */}
+          <LocalizedLink href={`/product/${product?.slug}`} className="block mb-2">
+            <h3 className="text-xs sm:text-sm font-black uppercase tracking-wide text-slate-900 dark:text-white line-clamp-1 group-hover:text-[#0BADFB] transition-colors">
+              {product?.translations?.name ?? product?.name}
+            </h3>
+          </LocalizedLink>
+
+          {/* Pricing */}
+          <div className="flex items-baseline gap-2 mb-3 px-0.5">
             {selectedVariant?.discounted_price !== 0 &&
-              selectedVariant?.discounted_price !== selectedVariant?.price ? (
+            selectedVariant?.discounted_price !== selectedVariant?.price ? (
               <>
-                {" "}
-                <p className="textColor text-base font-bold">
-                  {setting?.currency}
-                  {selectedVariant?.discounted_price}
-                </p>
-                <p className="SecondaryTextColor text-[14px] font-normal leading-[17px] m-1 line-through">
-                  {setting?.currency}
-                  {selectedVariant?.price}
-                </p>
+                <span className="text-lg font-black text-slate-900 dark:text-white">
+                  {setting?.currency}{selectedVariant?.discounted_price}
+                </span>
+                <span className="text-xs font-semibold text-slate-400 line-through">
+                  {setting?.currency}{selectedVariant?.price}
+                </span>
               </>
             ) : (
-              <p className="textColor text-base font-bold">
-                {setting?.currency}
-                {selectedVariant?.price}
-              </p>
+              <span className="text-lg font-black text-slate-900 dark:text-white">
+                {setting?.currency}{selectedVariant?.price}
+              </span>
             )}
           </div>
         </div>
+
+        {/* Action Controls: Unit Dropdown + Stepper + Full-width Add to Cart Button */}
         {!isProductAvailabel ? (
-          <div className="flex gap-0 md:gap-3 h-[80px] md:h-[44px] w-full flex-col md:flex-row">
-            <button
-              onClick={(e) => handleShowVariantModal(e, product)}
-              className="md:w-1/2 w-full flex items-center my-[5px] justify-between SecondaryTextColor rounded-[4px] px-2 py-1.5 md:py-2  buttonBackground text-sm md:text-nowrap"
-            >
-              {`${selectedVariant?.measurement} ${selectedVariant?.unit?.translations?.short_code ?? selectedVariant?.unit?.short_code}`}
-              {productsVariants?.length > 1 ? (
-                <div>
-                  <MdArrowDropDown size={16} />
-                </div>
-              ) : (
-                <></>
-              )}
-            </button>
-            {isProductAlreadyAdded ? (
-              <div className="md:w-1/2 w-full cardBorder flex justify-between rounded-sm my-1">
+          <div className="space-y-2.5 pt-1">
+            <div className="grid grid-cols-2 gap-2 items-center">
+              {/* Compact Measurement Dropdown */}
+              <button
+                type="button"
+                onClick={(e) => handleShowVariantModal(e, product)}
+                className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-700/40 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 transition-colors"
+              >
+                <span className="truncate">
+                  {`${selectedVariant?.measurement || ""} ${selectedVariant?.unit?.translations?.short_code ?? selectedVariant?.unit?.short_code ?? ""}`}
+                </span>
+                <MdArrowDropDown size={16} className="text-slate-400 shrink-0 ml-0.5" />
+              </button>
+
+              {/* Quantity Stepper (- 1 +) */}
+              <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-700/40 border border-slate-200 dark:border-slate-700 rounded-full p-0.5">
                 <button
-                  className=" md:px-0.5 flex items-center justify-center primaryBackColor  text-white font-bold text-sm w-8  h-[34px] rounded-[2px]"
+                  type="button"
+                  className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-white dark:bg-slate-800 hover:bg-slate-200/80 text-slate-700 dark:text-slate-200 flex items-center justify-center font-bold text-xs transition-colors shadow-2xs active:scale-95 disabled:opacity-40 cursor-pointer"
                   onClick={handleQuantityDecrease}
+                  disabled={!isProductAlreadyAdded}
                 >
-                  <FaMinus />
+                  <FaMinus size={8} />
                 </button>
-                <input
-                  value={addedQuantity}
-                  disabled
-                  className="w-1/2  text-center"
-                  min={"1"}
-                  max={selectedVariant?.stock}
-                />
+                <span className="text-xs font-extrabold text-slate-800 dark:text-white px-1">
+                  {addedQuantity || 1}
+                </span>
                 <button
-                  className=" flex items-center justify-center font-bold text-sm  md:p-1 primaryBackColor text-white w-8  rounded-[2px] h-[34px] "
-                  onClick={handleQuantityIncrease}
+                  type="button"
+                  className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-[#0BADFB] hover:bg-[#0298e0] text-white flex items-center justify-center font-bold text-xs transition-colors shadow-2xs active:scale-95 cursor-pointer"
+                  onClick={isProductAlreadyAdded ? handleQuantityIncrease : handleIntialAddToCart}
                 >
-                  <FaPlus />
+                  <FaPlus size={8} />
                 </button>
               </div>
-            ) : (
-              <button
-                className={`w-full md:w-1/2 flex gap-1 text-base  my-[5px] p-1 md:p-0 items-center  justify-center rounded-[4px]  hover:primaryBackColor transition-all duration-300 hover:text-white addToCartColor primaryColor `}
-                onClick={handleIntialAddToCart}
-              >
-                <FaShoppingBasket size={20} />
-                <span>{t("add")}</span>
-              </button>
-            )}
+            </div>
+
+            {/* Modern Full-Width Add to Cart Button */}
+            <button
+              type="button"
+              className="w-full py-2.5 rounded-full bg-[#0BADFB] hover:bg-[#0298e0] text-white text-xs font-extrabold shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer"
+              onClick={handleIntialAddToCart}
+            >
+              <FaShoppingBasket size={13} />
+              <span>{t("add_to_cart") || "Add to Cart"}</span>
+            </button>
           </div>
         ) : (
-          <div className="flex items-center h-[80px] md:h-[44px]  text-[#db3d26] font-extrabold ">
-            {t("OutOfStock")}
+          <div className="pt-3 text-center">
+            <span className="inline-flex items-center justify-center w-full text-rose-600 text-xs font-extrabold bg-rose-50 dark:bg-rose-950/40 py-2 rounded-full border border-rose-200 dark:border-rose-900/60">
+              {t("OutOfStock") || "Out of Stock"}
+            </span>
           </div>
         )}
-      </LocalizedLink>
+      </div>
+
       <ProductDetailModal
         product={product}
         showDetailModal={showProductDetail}

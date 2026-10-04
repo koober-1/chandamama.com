@@ -14,6 +14,7 @@ import { BiTrash } from "react-icons/bi";
 import { FaMinus, FaPlus } from "react-icons/fa";
 import ImageWithPlaceholder from "../image-with-placeholder/ImageWithPlaceholder";
 import { t } from "@/utils/translation";
+import { getVariantColorData } from "@/lib/utils";
 
 const CartProductCard = ({
   product,
@@ -326,68 +327,97 @@ const CartProductCard = ({
       : cart?.guestCart?.find(
         (prdct) => prdct?.product_variant_id == product?.product_variant_id
       )?.qty;
-      console.log(product)
+
+  const colorData = getVariantColorData(product) || getVariantColorData(product?.product_variant) || getVariantColorData(product?.variant);
+
   return (
-    <div className="  gap-4 p-4 border-b w-full min-w-0">
-      <div className=" hidden md:grid grid-cols-12 items-center ">
+    <div className="p-5 w-full min-w-0 transition-colors hover:bg-slate-50/50">
+      {/* Desktop Grid Row */}
+      <div className="hidden md:grid grid-cols-12 items-center gap-4">
         {/* Product Image and Details */}
-        <div className="col-span-4 flex space-x-4">
-          <div className="relative w-[64px] h-[64px] rounded-sm flex-shrink-0 cardBorder p-1">
+        <div className="col-span-4 flex items-center space-x-4">
+          <div className="relative w-16 h-16 rounded-2xl flex-shrink-0 bg-slate-50 border border-slate-100 p-1.5 overflow-hidden">
             <ImageWithPlaceholder
               src={product?.image_url}
-              alt={product?.product?.translations?.name}
-              width={380}
-              height={380}
-              className="w-full h-full object-cover  flex-shrink-0"
+              alt={product?.product?.translations?.name || "Product"}
+              width={160}
+              height={160}
+              className="w-full h-full object-contain"
             />
           </div>
-          <div>
-            <h3 className="text-base font-bold text-ellipsis overflow-hidden  min-w-[147px]">
-              {product?.product?.translations?.name}
+          <div className="min-w-0 flex-1">
+            <h3 className="text-sm font-bold text-slate-800 line-clamp-2 leading-snug">
+              {product?.product?.translations?.name || product?.name}
             </h3>
-            <p className="text-xs font-normal">
-              {product?.measurement} {product?.unit?.translations?.short_code}
-            </p>
+            <div className="flex items-center gap-1.5 flex-wrap mt-1">
+              <span className="inline-block text-[11px] font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+                {product?.measurement} {product?.unit?.translations?.short_code || product?.unit_code || ""}
+              </span>
+              {colorData?.name && (
+                <span className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200/60">
+                  {colorData.hex && (
+                    <span
+                      className="w-2.5 h-2.5 rounded-full border border-slate-300 shadow-2xs shrink-0 inline-block"
+                      style={{ backgroundColor: colorData.hex }}
+                    />
+                  )}
+                  <span>{colorData.name}</span>
+                </span>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Product Price */}
-        <div className="col-span-2 text-center px-1 overflow-hidden">
-          {product?.discounted_price !== 0 ? (
+        <div className="col-span-2 text-center px-1">
+          {product?.discounted_price !== 0 && product?.discounted_price !== product?.price ? (
             <div className="flex flex-col items-center">
-              <h2 className="text-base font-bold break-all max-w-full">
+              <span className="text-sm font-extrabold text-emerald-600">
                 {setting?.currency}
                 {product?.discounted_price}
-              </h2>
-              <p className="text-sm font-normal line-through break-all max-w-full">
+              </span>
+              <span className="text-xs font-medium text-slate-400 line-through">
                 {setting?.currency} {product?.price}
-              </p>
+              </span>
             </div>
           ) : (
-            <h2 className="text-base font-bold break-all max-w-full">
+            <span className="text-sm font-bold text-slate-800">
               {setting?.currency} {product?.price}
-            </h2>
+            </span>
           )}
         </div>
 
-        {/* Quantity Selector */}
-        <div className="col-span-3 flex items-center justify-center rounded cardBorder">
-          <button className="px-2 py-1" onClick={handleQuantityDecrease}>
-            <FaMinus />
-          </button>
-          <input
-            className="py-1 text-base w-2/3 text-center"
-            value={addedQuantity}
-            disabled
-          />
-          <button className="px-2 py-1" onClick={handleQuantityIncrease}>
-            <FaPlus />
-          </button>
+        {/* Quantity Stepper (Pill style) */}
+        <div className="col-span-3 flex items-center justify-center">
+          <div className="inline-flex items-center border border-slate-200 bg-slate-50 rounded-full p-0.5 shadow-inner">
+            <button
+              type="button"
+              className="w-7 h-7 rounded-full bg-white hover:bg-[#0BADFB] hover:text-white text-slate-700 shadow-xs transition-all flex items-center justify-center"
+              onClick={handleQuantityDecrease}
+              aria-label="Decrease quantity"
+            >
+              <FaMinus className="text-[10px]" />
+            </button>
+            <input
+              type="text"
+              className="w-10 text-center font-bold text-xs bg-transparent text-slate-800"
+              value={addedQuantity}
+              disabled
+            />
+            <button
+              type="button"
+              className="w-7 h-7 rounded-full bg-white hover:bg-[#0BADFB] hover:text-white text-slate-700 shadow-xs transition-all flex items-center justify-center"
+              onClick={handleQuantityIncrease}
+              aria-label="Increase quantity"
+            >
+              <FaPlus className="text-[10px]" />
+            </button>
+          </div>
         </div>
 
         {/* Total Price */}
-        <div className="col-span-2 text-center px-1 overflow-hidden">
-          <p className="text-base font-bold break-all max-w-full">
+        <div className="col-span-2 text-center px-1">
+          <p className="text-sm font-extrabold text-slate-900">
             {setting?.currency}
             {totalPrice}
           </p>
@@ -396,94 +426,100 @@ const CartProductCard = ({
         {/* Remove Button */}
         <div className="col-span-1 text-center">
           <button
-            className="text-red-600 hover:text-red-800"
+            type="button"
+            className="w-8 h-8 mx-auto rounded-full hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-all flex items-center justify-center"
             onClick={handleRemoveItem}
+            aria-label="Remove item"
           >
-            <BiTrash size={26} />
+            <BiTrash size={18} />
           </button>
         </div>
       </div>
-      {/* Mobile Card  */}
-      <div className="flex flex-col md:hidden gap-2 w-full overflow-hidden">
-        <div className="flex justify-between ">
-          <div>
-            <div className="relative w-[72px] h-[72px] rounded-sm flex-shrink-0 cardBorder p-1">
+
+      {/* Mobile Card */}
+      <div className="flex flex-col md:hidden gap-3.5 bg-slate-50/50 p-3.5 rounded-2xl border border-slate-100">
+        <div className="flex justify-between items-start gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="relative w-14 h-14 rounded-xl flex-shrink-0 bg-white border border-slate-100 p-1 overflow-hidden">
               <ImageWithPlaceholder
                 src={product?.image_url}
-                alt={product?.product?.translations?.name}
-                width={380}
-                height={380}
-                className=" h-full w-full object-cover  flex-shrink-0"
+                alt={product?.product?.translations?.name || "Product"}
+                width={140}
+                height={140}
+                className="h-full w-full object-contain"
               />
             </div>
-            <div>
-              <h3 className="text-base font-bold truncate max-w-full">
-                {product?.product?.translations?.name}
+            <div className="min-w-0">
+              <h3 className="text-sm font-bold text-slate-800 truncate">
+                {product?.product?.translations?.name || product?.name}
               </h3>
+              <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
+                <span className="text-xs font-semibold text-slate-500">
+                  {product?.measurement} {product?.unit_code || product?.unit?.translations?.short_code || ""}
+                </span>
+                {colorData?.name && (
+                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200/60">
+                    {colorData.hex && (
+                      <span
+                        className="w-2.5 h-2.5 rounded-full border border-slate-300 shadow-2xs shrink-0 inline-block"
+                        style={{ backgroundColor: colorData.hex }}
+                      />
+                    )}
+                    <span>{colorData.name}</span>
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+          <button
+            type="button"
+            className="w-8 h-8 rounded-full hover:bg-rose-50 text-slate-400 hover:text-rose-600 flex items-center justify-center flex-shrink-0"
+            onClick={handleRemoveItem}
+            aria-label="Remove item"
+          >
+            <BiTrash size={18} />
+          </button>
+        </div>
 
-              <p className="text-xs font-normal">
-                {product?.measurement} {product?.unit_code}
-              </p>
-            </div>
-          </div>
+        <div className="flex items-center justify-between pt-2 border-t border-slate-200/60">
           <div>
+            <span className="text-xs text-slate-400 font-semibold">{t("price")}: </span>
+            <span className="text-sm font-bold text-emerald-600">
+              {setting?.currency}
+              {product?.discounted_price !== 0 ? product?.discounted_price : product?.price}
+            </span>
+          </div>
+
+          {/* Stepper */}
+          <div className="inline-flex items-center border border-slate-200 bg-white rounded-full p-0.5 shadow-xs">
             <button
-              className="text-red-600 hover:text-red-800"
-              onClick={handleRemoveItem}
+              type="button"
+              className="w-7 h-7 rounded-full bg-slate-100 hover:bg-[#0BADFB] hover:text-white text-slate-700 transition-all flex items-center justify-center"
+              onClick={handleQuantityDecrease}
             >
-              <BiTrash size={26} />
-            </button>
-          </div>
-        </div>
-        <div className="flex flex-col gap-4 border-t">
-          {/* Product Price */}
-          <div className="flex justify-between pt-2">
-            <div>{t("price")}</div>
-            <div className="flex flex-wrap items-center gap-2 max-w-full overflow-hidden">
-              {product?.discounted_price !== 0 ? (
-                <>
-                  <h2 className="text-base font-bold break-all">
-                    {setting?.currency}
-                    {product?.discounted_price}
-                  </h2>
-                  <p className="text-sm font-normal line-through break-all">
-                    {setting?.currency} {product?.price}
-                  </p>
-                </>
-              ) : (
-                <h2 className="text-base font-bold break-all">
-                  {setting?.currency} {product?.price}
-                </h2>
-              )}
-            </div>
-          </div>
-        </div>
-        <div className="flex justify-between border-t items-center  pt-2">
-          <div className="text-center font-bold">{t("quantity")}</div>
-          {/* Quantity Selector */}
-          <div className="flex items-center justify-center rounded cardBorder">
-            <button className="px-2 py-1" onClick={handleQuantityDecrease}>
-              <FaMinus />
+              <FaMinus className="text-[10px]" />
             </button>
             <input
-              className="py-1 text-base max-w-[97px] text-center"
+              type="text"
+              className="w-8 text-center font-bold text-xs bg-transparent text-slate-800"
               value={addedQuantity}
               disabled
             />
-            <button className="px-2 py-1" onClick={handleQuantityIncrease}>
-              <FaPlus />
+            <button
+              type="button"
+              className="w-7 h-7 rounded-full bg-slate-100 hover:bg-[#0BADFB] hover:text-white text-slate-700 transition-all flex items-center justify-center"
+              onClick={handleQuantityIncrease}
+            >
+              <FaPlus className="text-[10px]" />
             </button>
           </div>
-        </div>
 
-        <div className="flex justify-between border-t  pt-2">
-          <div className=" text-center font-bold">{t("total")}</div>
-          {/* Total Price */}
-          <div className=" text-center">
-            <p className="text-base font-bold">
+          <div>
+            <span className="text-xs text-slate-400 font-semibold">{t("total")}: </span>
+            <span className="text-sm font-extrabold text-slate-900">
               {setting?.currency}
               {totalPrice}
-            </p>
+            </span>
           </div>
         </div>
       </div>

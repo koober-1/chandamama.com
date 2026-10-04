@@ -14,13 +14,7 @@ import { toast } from "react-toastify";
 import { useLocalizedRouter } from "@/utils/localizedNav";
 import { addUserBalance } from "@/redux/slices/userSlice";
 import { CiWallet } from "react-icons/ci";
-let PaystackPop;
 
-if (typeof window !== "undefined") {
-  import("@paystack/inline-js").then((module) => {
-    PaystackPop = module.default;
-  });
-}
 // payment SVGS
 import CashfreeImage from "@/assets/payment_methods_svgs/ic_cashfree.svg";
 import RazorpayImage from "@/assets/payment_methods_svgs/ic_razorpay.svg";
@@ -188,6 +182,8 @@ const WalletBalanceModal = ({
   ) => {
     const finalAmount = type === "subscription" ? selectedPlan?.price : amount;
     try {
+      const paystackModule = await import("@paystack/inline-js");
+      const PaystackPop = paystackModule.default;
       const handler = PaystackPop.setup({
         key:
           setting.payment_setting &&

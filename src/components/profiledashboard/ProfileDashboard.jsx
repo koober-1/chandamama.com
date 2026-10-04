@@ -50,22 +50,22 @@ const ProfileDashboard = () => {
   const activeTab = router.pathname.split("/").pop();
 
   return (
-    <section>
+    <section className="bg-slate-50/50 min-h-[75vh] pb-16">
       <BreadCrumb />
-      <div className="container px-2">
-        <div className="grid grid-cols-12 gap-6 my-10">
-          <div className="md:col-span-4 hidden md:block">
+      <div className="container mx-auto px-4 max-w-7xl my-8 md:my-10">
+        <div className="grid grid-cols-12 gap-6 lg:gap-8">
+          <div className="md:col-span-4 lg:col-span-4 hidden md:block">
             <ProfileSidebar
               setSelectedTab={setSelectedTab}
               selectedTab={selectedTab}
             />
           </div>
 
-          <div className="col-span-12 md:col-span-8">
+          <div className="col-span-12 md:col-span-8 lg:col-span-8">
             {loading ? (
-              <div className="flex flex-col gap-2">
-                <CardSkeleton height={50} />
-                <CardSkeleton height={800} />
+              <div className="flex flex-col gap-4">
+                <CardSkeleton height={60} />
+                <CardSkeleton height={500} />
               </div>
             ) : (
               <>

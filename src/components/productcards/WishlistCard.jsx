@@ -228,63 +228,71 @@ const WishlistCard = ({
   )?.qty;
 
   return (
-    <div className="cardBorder p-4 w-full overflow-hidden border-b ">
-      <div className="lg:grid grid-cols-12 items-start gap-6 p-4  hidden">
+    <div className="w-full rounded-2xl hover:bg-slate-50/70 p-3 sm:p-4 transition-all duration-200">
+      {/* Desktop Layout */}
+      <div className="hidden lg:grid grid-cols-12 items-center gap-4">
         {/* Product Image and Details */}
-        <div className="col-span-7 xl:col-span-6 flex space-x-5">
-          <div className="w-[72px] h-[72px] rounded-sm cardBorder p-[4px] flex-shrink-0">
+        <div className="col-span-6 flex items-center gap-4">
+          <div className="w-18 h-18 sm:w-20 sm:h-20 rounded-2xl border border-slate-100 overflow-hidden bg-white shrink-0 p-1">
             <ImageWithPlaceholder
               src={product?.image_url}
-              alt="Image"
-              className="h-full w-full object-cover"
-              height={400}
-              width={400}
+              alt={product?.translations?.name || "Product"}
+              className="h-full w-full object-cover rounded-xl"
+              height={80}
+              width={80}
             />
           </div>
-          <div className="flex flex-col">
-            <h2 className="font-bold text-lg">{product?.translations?.name}</h2>
-            <p
-              className="font-normal text-sm flex gap-1 items-center cursor-pointer"
-              onClick={handleShowVariatModal}
-            >
-              {product?.variants[0]?.measurement}
-              {product?.variants[0]?.unit?.translations?.name}
-              {product?.variants?.length > 1 && <IoMdArrowDropdown />}
-            </p>
+          <div className="flex flex-col min-w-0">
+            <h4 className="font-bold text-base text-slate-900 truncate">
+              {product?.translations?.name}
+            </h4>
+            <div className="mt-1">
+              <span
+                className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer"
+                onClick={handleShowVariatModal}
+              >
+                <span>
+                  {product?.variants[0]?.measurement} {product?.variants[0]?.unit?.translations?.name}
+                </span>
+                {product?.variants?.length > 1 && <IoMdArrowDropdown size={14} />}
+              </span>
+            </div>
           </div>
         </div>
 
         {/* Quantity Selector */}
-        <div className="col-span-2 xl:col-span-3 flex items-center justify-center rounded">
+        <div className="col-span-3 flex items-center justify-center">
           {isProductAlreadyAdded ? (
-            <div className="cardBorder flex w-[100px] h-[30px] justify-between rounded-sm my-1">
+            <div className="flex items-center rounded-full border border-slate-200 bg-white shadow-2xs h-8 px-1">
               <button
-                className="md:p-1 flex items-center justify-center primaryBackColor text-white font-bold text-sm w-8 rounded-[2px]"
+                className="w-6 h-6 rounded-full hover:bg-slate-100 text-slate-700 flex items-center justify-center transition-colors"
                 onClick={handleQuantityDecrease}
+                aria-label="Decrease quantity"
               >
-                <FaMinus />
+                <FaMinus size={10} />
               </button>
               <input
                 value={addedQuantity}
                 disabled
-                className="w-full h-full text-center"
+                className="w-8 text-center text-xs font-bold text-slate-800 bg-transparent select-none"
                 min="1"
                 max={product?.variants[0]?.stock}
               />
               <button
-                className="flex items-center justify-center font-bold text-sm md:p-1 primaryBackColor text-white w-8 rounded-[2px]"
+                className="w-6 h-6 rounded-full hover:bg-slate-100 text-slate-700 flex items-center justify-center transition-colors"
                 onClick={handleQuantityIncrease}
+                aria-label="Increase quantity"
               >
-                <FaPlus />
+                <FaPlus size={10} />
               </button>
             </div>
           ) : (
             <button
-              className="flex gap-2 w-[100px] h-full  justify-center items-center primaryColor py-2 px-3 rounded-sm text-base font-semibold bg-[#55AE7B1F]"
+              className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs shadow-xs transition-all hover:scale-[1.02]"
               onClick={handleIntialAddToCart}
             >
-              <FaShoppingBasket size={22} />
-              {t("add")}
+              <FaShoppingBasket size={14} />
+              <span>{t("add")}</span>
             </button>
           )}
         </div>
@@ -292,127 +300,131 @@ const WishlistCard = ({
         {/* Product Price */}
         <div className="col-span-2 text-center">
           {product?.variants[0]?.discounted_price !== 0 ? (
-            <>
-              <p className="textColor text-base font-bold">
+            <div className="flex flex-col items-center">
+              <span className="text-base font-bold text-slate-900">
                 {setting?.currency}
                 {product?.variants[0]?.discounted_price}
-              </p>
-              <p className="SecondaryTextColor text-[14px] font-normal leading-[17px] m-1 line-through">
+              </span>
+              <span className="text-xs text-slate-400 line-through">
                 {setting?.currency}
                 {product?.variants[0]?.price}
-              </p>
-            </>
+              </span>
+            </div>
           ) : (
-            <p className="textColor text-base font-bold">
+            <span className="text-base font-bold text-slate-900">
               {setting?.currency}
               {product?.variants[0]?.price}
-            </p>
+            </span>
           )}
         </div>
 
         {/* Remove Button */}
-        <div className="col-span-1 text-center">
+        <div className="col-span-1 flex justify-end">
           <button
-            className="text-red-600 hover:text-red-800"
+            className="w-9 h-9 rounded-full bg-slate-100 hover:bg-rose-50 text-slate-400 hover:text-rose-600 flex items-center justify-center transition-colors"
             onClick={() => handleRemoveFromWishlist(product?.id)}
+            title="Remove from wishlist"
           >
-            <BiTrash size={26} />
+            <BiTrash size={18} />
           </button>
         </div>
       </div>
 
-      {/* Tab and Mobile Cards */}
-      <div className="flex flex-col lg:hidden w-full overflow-hidden gap-3">
-        <div className="grid grid-cols-12 gap-2 w-full">
-          <div className="flex col-span-10 gap-2">
-            <div className="w-[72px] h-[72px] rounded-sm cardBorder p-[4px] flex-shrink-0">
-              <ImageWithPlaceholder
-                src={product?.image_url}
-                alt="Image"
-                className="h-full w-full object-cover"
-                height={400}
-                width={400}
-              />
-            </div>
-            <div className="flex flex-col">
-              <h2 className="font-bold text-lg">{product?.name}</h2>
-              <p
-                className="font-normal text-sm flex gap-1 items-center cursor-pointer"
+      {/* Mobile Layout */}
+      <div className="flex flex-col lg:hidden gap-3">
+        <div className="flex items-center gap-3">
+          <div className="w-16 h-16 rounded-xl border border-slate-100 overflow-hidden bg-white shrink-0 p-1">
+            <ImageWithPlaceholder
+              src={product?.image_url}
+              alt={product?.name || "Product"}
+              className="h-full w-full object-cover rounded-lg"
+              height={64}
+              width={64}
+            />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h4 className="font-bold text-sm text-slate-900 truncate">
+              {product?.name}
+            </h4>
+            <div className="mt-1">
+              <span
+                className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 cursor-pointer"
                 onClick={handleShowVariatModal}
               >
-                {product?.variants[0]?.measurement}
-                {product?.variants[0]?.stock_unit_name}
-                {product?.variants?.length > 1 && <IoMdArrowDropdown />}
-              </p>
+                <span>
+                  {product?.variants[0]?.measurement} {product?.variants[0]?.stock_unit_name}
+                </span>
+                {product?.variants?.length > 1 && <IoMdArrowDropdown size={14} />}
+              </span>
             </div>
           </div>
-          <div className="col-span-2 text-center">
+          <div className="text-right shrink-0">
             {product?.variants[0]?.discounted_price !== 0 ? (
-              <>
-                <p className="textColor text-base font-bold">
+              <div className="flex flex-col items-end">
+                <span className="text-sm font-bold text-slate-900">
                   {setting?.currency}
                   {product?.variants[0]?.discounted_price}
-                </p>
-                <p className="SecondaryTextColor text-[14px] font-normal leading-[17px] m-1 line-through">
+                </span>
+                <span className="text-xs text-slate-400 line-through">
                   {setting?.currency}
                   {product?.variants[0]?.price}
-                </p>
-              </>
+                </span>
+              </div>
             ) : (
-              <p className="textColor text-base font-bold">
+              <span className="text-sm font-bold text-slate-900">
                 {setting?.currency}
                 {product?.variants[0]?.price}
-              </p>
+              </span>
             )}
           </div>
         </div>
 
-        <div className="grid grid-cols-12 gap-2 w-full">
+        <div className="flex items-center justify-between pt-1">
           {/* Quantity Selector */}
-          <div className="col-span-10 flex items-start justify-start rounded">
+          <div>
             {isProductAlreadyAdded ? (
-              <div className="cardBorder flex w-[100px] h-[30px] justify-between rounded-sm my-1">
+              <div className="flex items-center rounded-full border border-slate-200 bg-white shadow-2xs h-8 px-1">
                 <button
-                  className="md:p-1 flex items-center justify-center primaryBackColor text-white font-bold text-sm w-8 rounded-[2px]"
+                  className="w-6 h-6 rounded-full hover:bg-slate-100 text-slate-700 flex items-center justify-center transition-colors"
                   onClick={handleQuantityDecrease}
                 >
-                  <FaMinus />
+                  <FaMinus size={10} />
                 </button>
                 <input
                   value={addedQuantity}
                   disabled
-                  className="w-full h-full text-center"
+                  className="w-8 text-center text-xs font-bold text-slate-800 bg-transparent"
                   min="1"
                   max={product?.variants[0]?.stock}
                 />
                 <button
-                  className="flex items-center justify-center font-bold text-sm md:p-1 primaryBackColor text-white w-8 rounded-[2px]"
+                  className="w-6 h-6 rounded-full hover:bg-slate-100 text-slate-700 flex items-center justify-center transition-colors"
                   onClick={handleQuantityIncrease}
                 >
-                  <FaPlus />
+                  <FaPlus size={10} />
                 </button>
               </div>
             ) : (
               <button
-                className="flex gap-2 w-[100px] h-full  justify-center items-center primaryColor py-2 px-3 rounded-sm text-base font-semibold bg-[#55AE7B1F]"
+                className="inline-flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs shadow-xs transition-all"
                 onClick={handleIntialAddToCart}
               >
-                <FaShoppingBasket size={22} />
-                {t("add")}
+                <FaShoppingBasket size={13} />
+                <span>{t("add")}</span>
               </button>
             )}
           </div>
+
           {/* Remove Button */}
-          <div className="col-span-2 text-center">
-            <button
-              className="text-red-600 hover:text-red-800"
-              onClick={() => handleRemoveFromWishlist(product?.id)}
-            >
-              <BiTrash size={26} />
-            </button>
-          </div>
+          <button
+            className="w-8 h-8 rounded-full bg-slate-100 hover:bg-rose-50 text-slate-400 hover:text-rose-600 flex items-center justify-center transition-colors"
+            onClick={() => handleRemoveFromWishlist(product?.id)}
+          >
+            <BiTrash size={16} />
+          </button>
         </div>
       </div>
+
       {/* Variants Modal */}
       <VariantsModal
         product={product}

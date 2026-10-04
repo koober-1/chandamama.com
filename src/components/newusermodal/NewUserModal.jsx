@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useSelector, useDispatch } from "react-redux";
 import { t } from "@/utils/translation";
 import * as api from "@/api/apiRoutes";
@@ -199,9 +199,12 @@ const NewUserModal = ({
     <Dialog open={showNewUser}>
       <DialogContent className="">
         <DialogHeader className="flex flex-row justify-between items-center">
-          <div className="">
-            <h1 className="text-3xl font-bold">{t("register")}</h1>
-          </div>
+          <DialogTitle className="">
+            <span className="text-3xl font-bold">{t("register")}</span>
+          </DialogTitle>
+          <DialogDescription className="sr-only">
+            Complete your profile registration
+          </DialogDescription>
           <div className="closeButtonBg rounded-full p-[8px] gap-[4px] cursor-pointer">
             <RiCloseFill size={22} onClick={() => setShowNewUser(false)} />
           </div>

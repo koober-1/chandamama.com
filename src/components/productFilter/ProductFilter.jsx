@@ -33,7 +33,7 @@ const Filter = ({
   setValues,
   setMinPrice,
   setMaxPrice,
-  setShowFilter = () => {},
+  setShowFilter = () => { },
   hideCategory,
   disableFilter,
 }) => {
@@ -41,6 +41,12 @@ const Filter = ({
   const setting = useSelector((state) => state?.Setting?.setting);
   const city = useSelector((state) => state.City);
   const language = useSelector((state) => state.Language.selectedLanguage);
+
+  const effectiveLat =
+    city?.city?.latitude || city?.latitude || setting?.default_city?.latitude || 23.242;
+  const effectiveLng =
+    city?.city?.longitude || city?.longitude || setting?.default_city?.longitude || 69.6669;
+
   const dispatch = useDispatch();
   const [categories, setCategories] = useState(null);
   const [selectedCategories, setSelectedCategories] = useState([]);
@@ -72,7 +78,7 @@ const Filter = ({
   }, [language?.id]);
 
   const { data: categoriesData, isLoading: loadingCategories } = useQuery({
-    queryKey: ["filter-category",language?.id],
+    queryKey: ["filter-category", language?.id],
 
     queryFn: async () => {
       const response = await api.getCategories();
@@ -89,6 +95,24 @@ const Filter = ({
     }
   }, [categoriesData]);
 
+  useEffect(() => {
+    if (
+      filter?.category_id &&
+      filter?.category_id !== "null" &&
+      filter?.category_id !== "undefined" &&
+      filter?.category_id !== "NaN" &&
+      filter?.category_id !== "all categories"
+    ) {
+      const cats = String(filter.category_id)
+        .split(",")
+        .map((c) => parseInt(c))
+        .filter((c) => !isNaN(c));
+      setSelectedCategories(cats);
+    } else {
+      setSelectedCategories([]);
+    }
+  }, [filter?.category_id]);
+
   const handleActiveKey = (key) => {
     setActiveKey((prevActiveKeys) =>
       prevActiveKeys.includes(key)
@@ -97,13 +121,22 @@ const Filter = ({
     );
   };
 
+  const handleCategoryChange = (categories) => {
+    const validCats = Array.isArray(categories)
+      ? categories.map((c) => parseInt(c)).filter((c) => !isNaN(c))
+      : [];
+    setSelectedCategories(validCats);
+    setOffset(0);
+    dispatch(setFilterCategory({ data: validCats.join(",") }));
+  };
+
   const fetchSellers = useCallback(
     async (sOffset) => {
       setLoadingSellers(true);
       try {
         const result = await api.getSellers({
-          latitude: city?.city?.latitude,
-          longitude: city?.city?.longitude,
+          latitude: effectiveLat,
+          longitude: effectiveLng,
           limit: sellerLimit,
           offset: sOffset,
         });
@@ -124,7 +157,7 @@ const Filter = ({
         setLoadingSellers(false);
       }
     },
-    [city?.city?.latitude, city?.city?.longitude,language?.id],
+    [effectiveLat, effectiveLng, language?.id],
   );
 
   // const fetchCategories = async () => {
@@ -139,13 +172,7 @@ const Filter = ({
   //   }
   // };
 
-  const handleCategoryChange = (categories) => {
-    setSelectedCategories(categories);
-    // NOTE: Comment below line due to empty state issue in product page on refresh
-    // setProductResult([]); // Reset products
-    setOffset(0); // Reset offset
-    dispatch(setFilterCategory({ data: categories.join(",") }));
-  };
+
 
   const fetchBrands = useCallback(
     async (bOffset) => {
@@ -154,8 +181,8 @@ const Filter = ({
         const result = await api.getBrands({
           limit: brandLimit,
           offset: bOffset,
-          latitude: city?.city?.latitude,
-          longitude: city?.city?.longitude,
+          latitude: effectiveLat,
+          longitude: effectiveLng,
         });
         if (result.status === 1) {
           setbrands((prevBrands) => {
@@ -173,7 +200,7 @@ const Filter = ({
         setLoadingBrands(false);
       }
     },
-    [city?.city?.latitude, city?.city?.longitude, language?.id],
+    [effectiveLat, effectiveLng, language?.id],
   );
 
   const filterbyBrands = (brand) => {
@@ -222,60 +249,62 @@ const Filter = ({
       {loadingCategories || loadingBrands || loadingSellers ? (
         <FilterSkeleton />
       ) : (
-        <div className="md:cardBorder rounded-md headerBackgroundColor ">
-          <div className="p-3 md:p-4 bottomBorder ">
-            <div className="flex justify-between items-center  ">
-              <h5 className="text-xl font-bold">{t("filters")}</h5>
-              <p
-                className="m-0 text-sm font-normal text-[#DB3D26] cursor-pointer"
-                onClick={() => {
-                  setSelectedCategories([]);
-                  setMinPrice(defaultMinPrice);
-                  setMaxPrice(defaultMaxPrice);
-                  setValues([defaultMinPrice, defaultMaxPrice]);
-                  setTempMinPrice(defaultMinPrice);
-                  setTempMaxPrice(defaultMaxPrice);
+        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-subtle overflow-hidden">
+          {/* Filter Header */}
+          <div className="p-4 border-b border-slate-100 bg-slate-50/60 flex justify-between items-center">
+            <h5 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+              {t("filters") || "Filters"}
+            </h5>
+            <button
+              type="button"
+              className="text-xs font-bold text-[#0BADFB] hover:underline transition-colors cursor-pointer"
+              onClick={() => {
+                setSelectedCategories([]);
+                setMinPrice(defaultMinPrice);
+                setMaxPrice(defaultMaxPrice);
+                setValues([defaultMinPrice, defaultMaxPrice]);
+                setTempMinPrice(defaultMinPrice);
+                setTempMaxPrice(defaultMaxPrice);
 
-                  if (disableFilter) {
-                    dispatch(
-                      clearAllFilter({
-                        preserveCategory: filter.listing_source === "category",
-                      }),
-                    );
-                  } else {
-                    dispatch(clearAllFilter());
-                  }
-                  // dispatch(resetSelectedCategories())
-                  setOffset(0);
-                  setShowFilter(false);
-                  setProductResult([]);
-                }}
-              >
-                {t("clearAll")}
-              </p>
-            </div>
+                if (disableFilter) {
+                  dispatch(
+                    clearAllFilter({
+                      preserveCategory: filter.listing_source === "category",
+                    }),
+                  );
+                } else {
+                  dispatch(clearAllFilter());
+                }
+                setOffset(0);
+                setShowFilter(false);
+                setProductResult([]);
+              }}
+            >
+              {t("clearAll") || "Reset All"}
+            </button>
           </div>
+
+          {/* Categories Filter */}
           {!hideCategory && (
             <Collapsible
               open={activeKey.includes("1")}
-              className="w-full bottomBorder"
+              className="w-full border-b border-slate-100"
               onOpenChange={() => handleActiveKey("1")}
             >
-              <CollapsibleTrigger className="w-full p-4 flex justify-between items-center">
-                <div className="text-start font-medium textColor md:text-base">
-                  {t("product_category")}
-                </div>
-                <div
-                  className={`transition-transform duration-250 ${
-                    activeKey.includes("1") ? "rotate-0" : "-rotate-90"
-                  }`}
+              <CollapsibleTrigger className="w-full px-4 py-3.5 flex justify-between items-center hover:bg-slate-50/80 transition-colors group cursor-pointer">
+                <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                  {t("product_category") || "Categories"}
+                </span>
+                <span
+                  className={`text-slate-400 group-hover:text-slate-600 transition-transform duration-200 ${activeKey.includes("1") ? "rotate-0" : "-rotate-90"
+                    }`}
                 >
-                  <FaChevronDown />
-                </div>
+                  <FaChevronDown size={11} />
+                </span>
               </CollapsibleTrigger>
 
               <CollapsibleContent>
-                <div className="filter-row">
+                <div className="px-4 pb-4">
                   <CategoryTree
                     categories={categories}
                     selectedCategories={selectedCategories}
@@ -287,91 +316,90 @@ const Filter = ({
             </Collapsible>
           )}
 
+          {/* Brands Filter */}
           {brands && brands?.length > 0 && (
             <Collapsible
               open={activeKey.includes("2")}
-              className="w-full bottomBorder"
+              className="w-full border-b border-slate-100"
               onOpenChange={() => handleActiveKey("2")}
             >
-              <CollapsibleTrigger className="w-full p-4 flex justify-between items-center">
-                <div className="text-base font-medium textColor">
-                  {t("brands")}
-                </div>
-                <div
-                  className={`transition-transform duration-250 ${
-                    activeKey.includes("2") ? "rotate-0" : "-rotate-90"
-                  }`}
+              <CollapsibleTrigger className="w-full px-4 py-3.5 flex justify-between items-center hover:bg-slate-50/80 transition-colors group cursor-pointer">
+                <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                  {t("brands") || "Brands"}
+                </span>
+                <span
+                  className={`text-slate-400 group-hover:text-slate-600 transition-transform duration-200 ${activeKey.includes("2") ? "rotate-0" : "-rotate-90"
+                    }`}
                 >
-                  <FaChevronDown />
-                </div>
+                  <FaChevronDown size={11} />
+                </span>
               </CollapsibleTrigger>
               <CollapsibleContent>
-                <div className="filter-row px-2 pb-4 md:px-2 lg:px-4">
-                  {brands?.map((brand, index) => {
+                <div className="px-4 pb-4 space-y-2">
+                  {brands?.map((brand) => {
                     const isChecked = filter.brand_ids.includes(brand.id);
                     return (
                       <div
                         key={brand.id}
-                        className="flex items-center ml-1 my-2 md:ml-1.5 lg:ml-2 gap-2"
+                        className="flex items-center gap-2.5 py-1 cursor-pointer group"
                         onClick={() => {
                           setProductResult([]);
                           filterbyBrands(brand);
                         }}
                       >
                         <Checkbox
-                          className="data-[state=checked]:primaryBackColor shadow-sm border-gray-300 border-[1.5px]"
+                          className="data-[state=checked]:bg-[#0BADFB] data-[state=checked]:border-[#0BADFB] border-slate-300 rounded"
                           checked={isChecked}
                           onCheckedChange={() => {
                             setProductResult([]);
                             filterbyBrands(brand);
                           }}
                         />
-                        <span className="text-sm font-normal textColor">
+                        <span className="text-xs font-medium text-slate-700 group-hover:text-slate-900 transition-colors">
                           {brand?.translations?.name ?? brand?.name}
                         </span>
                       </div>
                     );
                   })}
-                  {brands?.length < totalBrands ? (
-                    <a
-                      className="brand-view-more textColor"
+                  {brands?.length < totalBrands && (
+                    <button
+                      type="button"
+                      className="text-xs font-semibold text-[#0BADFB] hover:underline pt-1 block cursor-pointer"
                       onClick={loadMoreBrands}
                     >
-                      {t("showMore")}
-                    </a>
-                  ) : (
-                    <></>
+                      {t("showMore") || "+ View More"}
+                    </button>
                   )}
                 </div>
               </CollapsibleContent>
             </Collapsible>
           )}
 
+          {/* Sellers Filter */}
           <Collapsible
             open={activeKey.includes("3")}
-            className="w-full bottomBorder"
+            className="w-full border-b border-slate-100"
             onOpenChange={() => handleActiveKey("3")}
           >
-            <CollapsibleTrigger className="w-full p-4 flex justify-between items-center">
-              <div className="text-base font-medium textColor">
-                {t("sellers")}
-              </div>
-              <div
-                className={`transition-transform duration-250 ${
-                  activeKey.includes("3") ? "rotate-0" : "-rotate-90"
-                }`}
+            <CollapsibleTrigger className="w-full px-4 py-3.5 flex justify-between items-center hover:bg-slate-50/80 transition-colors group cursor-pointer">
+              <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                {t("sellers") || "Sellers"}
+              </span>
+              <span
+                className={`text-slate-400 group-hover:text-slate-600 transition-transform duration-200 ${activeKey.includes("3") ? "rotate-0" : "-rotate-90"
+                  }`}
               >
-                <FaChevronDown />
-              </div>
+                <FaChevronDown size={11} />
+              </span>
             </CollapsibleTrigger>
-            <CollapsibleContent className="px-2 pb-4 md:px-2 lg:px-4">
-              <div className="filter-row ">
+            <CollapsibleContent className="px-4 pb-4">
+              <div className="space-y-2">
                 {sellers?.map((seller) => {
-                  const isChecked = filter.seller_id === seller.id; // single selected seller
+                  const isChecked = filter.seller_id === seller.id;
                   return (
                     <div
                       key={seller.id}
-                      className="flex items-center ml-1 my-2 md:ml-1.5 lg:ml-2 gap-2"
+                      className="flex items-center gap-2.5 py-1 cursor-pointer group"
                       onClick={() => {
                         setProductResult([]);
                         setOffset(0);
@@ -384,8 +412,8 @@ const Filter = ({
                     >
                       <input
                         type="radio"
-                        name="seller" // same name for all to ensure single selection
-                        className="h-4 w-4"
+                        name="seller"
+                        className="h-4 w-4 text-[#0BADFB] focus:ring-[#0BADFB] accent-[#0BADFB] border-slate-300 cursor-pointer"
                         checked={isChecked}
                         onChange={() => {
                           setProductResult([]);
@@ -397,45 +425,45 @@ const Filter = ({
                           );
                         }}
                       />
-                      <span className="text-sm font-normal textColor">
+                      <span className="text-xs font-medium text-slate-700 group-hover:text-slate-900 transition-colors">
                         {seller?.translations?.name ?? seller?.name}
                       </span>
                     </div>
                   );
                 })}
 
-                {sellers?.length < totalSeller ? (
-                  <a
-                    className="brand-view-more textColor"
+                {sellers?.length < totalSeller && (
+                  <button
+                    type="button"
+                    className="text-xs font-semibold text-[#0BADFB] hover:underline pt-1 block cursor-pointer"
                     onClick={loadMoreSellers}
                   >
-                    {t("showMore")}
-                  </a>
-                ) : (
-                  <></>
+                    {t("showMore") || "+ View More"}
+                  </button>
                 )}
               </div>
             </CollapsibleContent>
           </Collapsible>
+
+          {/* Price Range Filter */}
           <Collapsible
             open={activeKey.includes("4")}
-            className="w-full bottomBorder"
+            className="w-full"
             onOpenChange={() => handleActiveKey("4")}
           >
-            <CollapsibleTrigger className="w-full p-4 flex justify-between items-center">
-              <div className="text-base font-medium textColor">
-                {t("priceRange")}
-              </div>
-              <div
-                className={`transition-transform duration-250 ${
-                  activeKey.includes("4") ? "rotate-0" : "-rotate-90"
-                }`}
+            <CollapsibleTrigger className="w-full px-4 py-3.5 flex justify-between items-center hover:bg-slate-50/80 transition-colors group cursor-pointer">
+              <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                {t("priceRange") || "Price Range"}
+              </span>
+              <span
+                className={`text-slate-400 group-hover:text-slate-600 transition-transform duration-200 ${activeKey.includes("4") ? "rotate-0" : "-rotate-90"
+                  }`}
               >
-                <FaChevronDown />
-              </div>
+                <FaChevronDown size={11} />
+              </span>
             </CollapsibleTrigger>
-            <CollapsibleContent className="px-2 pb-4 md:px-2 lg:px-4">
-              <div className="flex flex-col gap-4">
+            <CollapsibleContent className="px-4 pb-4">
+              <div className="flex flex-col gap-3.5">
                 <PriceSlider
                   minPrice={minPrice}
                   maxPrice={maxPrice}
@@ -444,21 +472,21 @@ const Filter = ({
                   setTempMinPrice={setTempMinPrice}
                   values={values}
                 />
-                <div className="range-prices flex justify-between">
-                  <p>
+                <div className="flex justify-between items-center text-xs font-semibold text-slate-700 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
+                  <span>
                     {setting?.currency}
-                    {/* {values[0]} */}
                     {minPrice}
-                  </p>
-                  <p>
+                  </span>
+                  <span className="text-slate-400 font-normal">to</span>
+                  <span>
                     {setting?.currency}
                     {maxPrice}
-                    {/* {values[1]} */}
-                  </p>
+                  </span>
                 </div>
                 <button
-                  className="rounded py-2 px-4 buttonBackground text-xl"
-                  onClick={(newValues) => {
+                  type="button"
+                  className="w-full py-2.5 rounded-full bg-[#0BADFB] hover:bg-[#0298e0] active:scale-[0.99] text-white font-bold text-xs shadow-xs hover:shadow-md hover:shadow-[#0BADFB]/20 transition-all cursor-pointer"
+                  onClick={() => {
                     setOffset(0);
                     setShowFilter(false);
                     setProductResult([]);
@@ -472,7 +500,7 @@ const Filter = ({
                     );
                   }}
                 >
-                  {t("apply")}
+                  {t("apply") || "Apply Price"}
                 </button>
               </div>
             </CollapsibleContent>

@@ -43,6 +43,11 @@ const CartDrawer = ({ showCart, setShowCart, setMobileActiveKey }) => {
   const language = useSelector((state) => state.Language.selectedLanguage);
   const coupon = useSelector((state) => state.Cart.promo_code);
 
+  const effectiveLat =
+    city?.latitude || setting?.default_city?.latitude || 23.242;
+  const effectiveLng =
+    city?.longitude || setting?.default_city?.longitude || 69.6669;
+
   const [showLogin, setShowLogin] = useState(false);
   const [cartProductsData, setCartProductsData] = useState([]);
   const [cartData, setCartData] = useState([]);
@@ -66,8 +71,8 @@ const CartDrawer = ({ showCart, setShowCart, setMobileActiveKey }) => {
     setLoading(true);
     try {
       const cartData = await api.getCart({
-        latitude: city?.latitude,
-        longitude: city?.longitude,
+        latitude: effectiveLat,
+        longitude: effectiveLng,
       });
       if (cartData?.status == 1) {
         setCartProductsData(cartData?.data?.cart);
@@ -130,8 +135,8 @@ const CartDrawer = ({ showCart, setShowCart, setMobileActiveKey }) => {
       const variantIds = cart?.guestCart?.map((p) => p.product_variant_id);
       const quantities = cart?.guestCart?.map((p) => p.qty);
       const response = await api.getGuestCart({
-        latitude: city?.latitude,
-        longitude: city?.longitude,
+        latitude: effectiveLat,
+        longitude: effectiveLng,
         variant_ids: variantIds?.join(","),
         quantities: quantities?.join(","),
       });
@@ -171,28 +176,38 @@ const CartDrawer = ({ showCart, setShowCart, setMobileActiveKey }) => {
       <Sheet open={showCart}>
         <SheetContent
           side={language?.type == "RTL" ? "left" : "right"}
-          className="p-0  w-full flex flex-col h-screen"
+          className="p-0 w-full sm:max-w-md flex flex-col h-screen bg-slate-50 border-l border-slate-200/80 shadow-2xl"
         >
-          <SheetHeader className="px-0 py-3 border-[1px] flex justify-between text-left">
-            <SheetTitle className="text-2xl font-bold flex flex-row items-center p-2 justify-between">
-              <p className="text-2xl font-bold">{t("shoppingCart")}</p>
-              <div className="closeButtonBg rounded-full p-[8px] gap-[4px]">
-                <RiCloseFill
-                  className="hover:cursor-pointer"
-                  size={22}
-                  onClick={() => setShowCart(false)}
-                />
-              </div>
+          {/* Drawer Header */}
+          <SheetHeader className="px-6 py-4 bg-white border-b border-slate-100 flex flex-row items-center justify-between text-left shrink-0">
+            <SheetTitle className="text-base font-bold text-slate-900 flex items-center gap-2.5">
+              <span>{t("shoppingCart") || "Your Cart"}</span>
+              {cartProductsData?.length > 0 && (
+                <span className="text-[11px] font-semibold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full border border-emerald-100">
+                  {cartProductsData.length} {cartProductsData.length === 1 ? "item" : "items"}
+                </span>
+              )}
             </SheetTitle>
+            <button
+              type="button"
+              aria-label="Close cart"
+              onClick={() => setShowCart(false)}
+              className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95"
+            >
+              <RiCloseFill size={20} />
+            </button>
           </SheetHeader>
 
           {loading ? (
-            <CartDrawerSkeletons />
+            <div className="p-4 flex-grow overflow-y-auto">
+              <CartDrawerSkeletons />
+            </div>
           ) : cartProductsData?.length !== 0 ? (
             <>
-              <div className="flex-grow overflow-y-auto gap-2 p-2 flex flex-col">
+              {/* Product list */}
+              <div className="flex-grow overflow-y-auto p-4 space-y-3">
                 {cartProductsData?.map((product) => (
-                  <div key={product?.id}>
+                  <div key={product?.id || product?.product_variant_id}>
                     <CartProductsCard
                       product={product}
                       cartProductsData={cartProductsData}
@@ -201,61 +216,65 @@ const CartDrawer = ({ showCart, setShowCart, setMobileActiveKey }) => {
                   </div>
                 ))}
               </div>
-              <div className="w-full mx-auto p-4 border rounded-md shadow-sm sticky bottom-0 ">
+
+              {/* Bottom Checkout & Summary Footer */}
+              <div className="w-full bg-white border-t border-slate-100 p-5 shadow-dropdown sticky bottom-0 z-20 space-y-4">
+                {/* Coupon Box */}
                 {couponLoading ? (
                   <AppliedCouponSkeleton />
                 ) : cart?.isGuest == false && !isCouponApplied ? (
-                  <div className="mb-2">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-bold">
-                        {t("have_coupon")}
-                      </span>
-                      <button
-                        className="p-1 border text-sm hover:primaryBackColor hover:text-white rounded-sm font-medium cardBorder"
-                        onClick={() => setShowCouponCode(true)}
-                      >
-                        {t("view_coupon")}
-                      </button>
+                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 flex justify-between items-center">
+                    <div className="flex items-center gap-2 text-xs font-semibold text-slate-700">
+                      <RiCoupon3Line size={18} className="text-emerald-600" />
+                      <span>{t("have_coupon") || "Have a promo code?"}</span>
                     </div>
+                    <button
+                      type="button"
+                      className="px-3 py-1 bg-white hover:bg-emerald-50 text-emerald-700 border border-slate-200 hover:border-emerald-200 rounded-full text-xs font-semibold shadow-xs transition-colors"
+                      onClick={() => setShowCouponCode(true)}
+                    >
+                      {t("view_coupon") || "Apply"}
+                    </button>
                   </div>
                 ) : (
                   cart?.isGuest == false &&
                   isCouponApplied && (
-                    <div>
-                      <div className="flex  justify-between items-center primaryDashedBorder mb-2">
-                        <div className="flex p-2  items-center gap-2">
-                          <RiCoupon3Line size={32} className="primaryColor" />
-                          <div className="w-3/4">
-                            <p className="font-bold text-wrap text-ellipsis overflow-hidden whitespace-nowrap w-3/4 max-h-12">
-                              {cart?.promo_code?.promo_code}
-                            </p>
-                            <p className="text-sm font-bold w-full">
-                              {t("promoCodeSuccess")}
-                            </p>
-                          </div>
-                          <div className="flex flex-col justify-start">
-                            <p>
-                              {setting?.currency}
-                              {cart?.promo_code?.discount}
-                            </p>
-                            <button
-                              className="text-red-500"
-                              onClick={handleRemoveCoupon}
-                              disabled={couponLoading}
-                            >
-                              {couponLoading ? "..." : t("delete")}
-                            </button>
-                          </div>
+                    <div className="p-3 rounded-xl bg-emerald-50/70 border border-emerald-200/80 flex justify-between items-center">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="w-8 h-8 rounded-lg bg-emerald-100/80 flex items-center justify-center text-emerald-700 shrink-0">
+                          <RiCoupon3Line size={18} />
                         </div>
+                        <div className="min-w-0">
+                          <p className="font-bold text-xs text-slate-900 truncate">
+                            {cart?.promo_code?.promo_code}
+                          </p>
+                          <p className="text-[11px] text-emerald-700 font-medium">
+                            {t("promoCodeSuccess") || "Coupon Applied"}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 shrink-0">
+                        <span className="text-xs font-bold text-emerald-700">
+                          -{setting?.currency}{cart?.promo_code?.discount}
+                        </span>
+                        <button
+                          type="button"
+                          className="text-[11px] font-semibold text-rose-600 hover:text-rose-700 underline"
+                          onClick={handleRemoveCoupon}
+                          disabled={couponLoading}
+                        >
+                          {couponLoading ? "..." : (t("delete") || "Remove")}
+                        </button>
                       </div>
                     </div>
                   )
                 )}
 
-                <div className="space-y-6">
-                  <div className="flex justify-between text-sm">
-                    <span>{t("total")}</span>
-                    <span className="font-bold">
+                {/* Subtotal row */}
+                <div className="space-y-1.5 pt-1">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-slate-500 font-medium">{t("total") || "Subtotal"}</span>
+                    <span className="font-bold text-lg text-slate-900 tracking-tight">
                       {setting?.currency}
                       {cart.isGuest
                         ? cart?.guestCartTotal
@@ -274,46 +293,60 @@ const CartDrawer = ({ showCart, setShowCart, setMobileActiveKey }) => {
                             )}
                     </span>
                   </div>
+                  <p className="text-[11px] text-slate-400">
+                    Taxes and shipping calculated at checkout
+                  </p>
                 </div>
-                <div className="mt-4 space-y-2">
+
+                {/* Action Buttons */}
+                <div className="space-y-2 pt-1">
                   <button
-                    className="w-full py-2  primaryBackColor rounded-md font-bold text-white"
+                    type="button"
+                    className="w-full py-3 rounded-full bg-[#0BADFB] hover:bg-[#0298e0] active:scale-[0.99] text-white font-bold text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
                     onClick={handleCheckoutbtnClick}
                   >
-                    {user?.jwtToken ? t("checkout") : t("login_to_checkout")}
+                    <span>{user?.jwtToken ? (t("checkout") || "Proceed to Checkout") : (t("login_to_checkout") || "Login to Checkout")}</span>
                   </button>
                   <button
-                    className="w-full py-2 border rounded-md font-medium cardBorder"
-                    onClick={() => router.push("/cart")}
+                    type="button"
+                    className="w-full py-2.5 rounded-full border border-slate-200 hover:border-[#0BADFB] hover:bg-slate-50 text-slate-700 hover:text-[#0BADFB] font-semibold text-xs transition-colors cursor-pointer"
+                    onClick={() => {
+                      setShowCart(false);
+                      router.push("/cart");
+                    }}
                   >
-                    {t("view_cart")}
+                    {t("view_cart") || "View Full Cart"}
                   </button>
                 </div>
               </div>
             </>
           ) : (
-            <div className="flex items-center justify-center h-full my-auto mx-10">
-              <div className="flex items-center justify-center flex-col gap-2">
-                <Image
-                  src={NoCartData}
-                  alt="No Cart Data"
-                  width={512}
-                  height={325}
-                  sizes="(max-width: 768px) 240px, 320px"
-                  className="object-contain"
-                />
-                <h1 className="font-bold text-[22px] text-center py-2">
-                  {t("empty_cart_list_message")}
-                </h1>
-                <p className="font-bold text-xs text-center">
-                  {t("empty_cart_list_description")}
+            <div className="flex items-center justify-center h-full my-auto px-6 py-12">
+              <div className="flex items-center justify-center flex-col text-center max-w-xs">
+                <div className="w-48 h-48 relative mb-4">
+                  <Image
+                    src={NoCartData}
+                    alt="Empty Cart"
+                    fill
+                    sizes="192px"
+                    className="object-contain"
+                  />
+                </div>
+                <h3 className="font-bold text-lg text-slate-900 mb-1">
+                  {t("empty_cart_list_message") || "Your cart is empty"}
+                </h3>
+                <p className="text-xs text-slate-500 mb-6 leading-relaxed">
+                  {t("empty_cart_list_description") || "Looks like you haven't added anything to your cart yet."}
                 </p>
                 <LocalizedLink
                   href="/products"
-                  className="primaryBackColor text-white font-bold p-1 rounded-sm"
-                  onClick={handleShopNow}
+                  className="px-6 py-2.5 rounded-full bg-[#0BADFB] hover:bg-[#0298e0] text-white font-bold text-xs shadow-sm hover:shadow transition-all"
+                  onClick={() => {
+                    handleShopNow();
+                    setShowCart(false);
+                  }}
                 >
-                  {t("empty_cart_list_button_name")}
+                  {t("empty_cart_list_button_name") || "Start Shopping"}
                 </LocalizedLink>
               </div>
             </div>

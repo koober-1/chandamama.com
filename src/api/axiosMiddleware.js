@@ -5,8 +5,9 @@ import { logoutAuth } from "@/redux/slices/userSlice";
 const access_key_param = "x-access-key";
 const access_key = "903361";
 
-const url = process.env.NEXT_PUBLIC_API_URL;
-const subUrl = process.env.NEXT_PUBLIC_API_SUBURL;
+const isClient = typeof window !== "undefined";
+const url = isClient ? "" : (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000");
+const subUrl = process.env.NEXT_PUBLIC_API_SUBURL || "/customer";
 const api = axios.create({
   baseURL: `${url}${subUrl}/`,
 });

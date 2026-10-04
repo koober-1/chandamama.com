@@ -18,13 +18,57 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-const auth = getAuth(app);
+
+let app = null;
+let auth = null;
 let messaging = null;
+
+try {
+  if (firebaseConfig.apiKey && firebaseConfig.apiKey.trim() !== "") {
+    app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+    auth = getAuth(app);
+  }
+} catch (err) {
+  console.warn("Firebase initialization skipped or invalid API key:", err?.message);
+}
+
+export const initFirebaseFromSetting = (setting) => {
+  if (app && auth) return { app, auth };
+
+  const fb = setting?.firebase || {};
+  const apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY || fb.firebase_apiKey || fb.apiKey;
+  const authDomain = process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || fb.authDomain;
+  const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || fb.projectId;
+  const storageBucket = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || fb.storageBucket;
+  const messagingSenderId = process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || fb.messagingSenderId;
+  const appId = process.env.NEXT_PUBLIC_FIREBASE_APP_ID || fb.appId;
+  const measurementId = process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || fb.measurementId;
+
+  const dynamicConfig = {
+    apiKey,
+    authDomain,
+    projectId,
+    storageBucket,
+    messagingSenderId,
+    appId,
+    measurementId,
+  };
+
+  if (apiKey && apiKey.trim() !== "") {
+    try {
+      app = !getApps().length ? initializeApp(dynamicConfig) : getApp();
+      auth = getAuth(app);
+      return { app, auth };
+    } catch (err) {
+      console.warn("Error initializing dynamic Firebase config:", err);
+    }
+  }
+  return { app, auth };
+};
 
 const getMessagingInstance = async () => {
   if (messaging) return messaging;
-  if (typeof window === "undefined") return null;
+  if (typeof window === "undefined" || !app) return null;
 
   try {
     const isSupportedBrowser = await isSupported();
@@ -108,7 +152,7 @@ export const onMessageListener = () => {
     if (messagingInstance) {
       onMessage(messagingInstance, (payload) => {
         const data = payload.data || {};
-         if (Notification.permission === "granted") {
+        if (Notification.permission === "granted") {
           const notification = new Notification(data.title || "New Notification", {
             body: data.body,
             icon: data.icon,
@@ -139,7 +183,7 @@ export const onMessageListener = () => {
 };
 
 export const getRedirectUrl = (data) => {
-  const { type, id,type_slug } = data || {};
+  const { type, id, type_slug } = data || {};
   const base = typeof window !== "undefined" ? window.location.origin : "";
   const productRequestURL = type_slug == "" ? `${base}/profile/requested-products` : `${base}/product/${type_slug}`;
 

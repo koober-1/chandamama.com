@@ -190,6 +190,7 @@ const VariantsModal = ({ product, showVariants, setShowVariants }) => {
         product_variant_id: variant.id,
         qty: Qty,
         productPrice: finalPrice,
+        color_variant: variant?.color_variant || product?.color_variant || "",
       };
       dispatch(addtoGuestCart({ data: [...cart?.guestCart, productData] }));
     }

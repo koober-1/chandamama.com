@@ -194,6 +194,7 @@ const HorizontalProductCard = ({ product }) => {
         product_variant_id: productVariantId,
         qty: Qty,
         productPrice: finalPrice,
+        color_variant: selectedVariant?.color_variant || product?.color_variant || "",
       };
       dispatch(addtoGuestCart({ data: [...cart?.guestCart, productData] }));
     }
@@ -455,20 +456,20 @@ const HorizontalProductCard = ({ product }) => {
     <div>
       <LocalizedLink
         href={`/product/${product?.slug}`}
-        className="grid grid-cols-12 p-3   cardBorder rounded-sm   gap-2 group  headerBackgroundColor "
+        className="group relative grid grid-cols-12 gap-3 p-3 bg-white dark:bg-slate-800 rounded-2xl border border-slate-300 dark:border-slate-700 hover:border-[#0BADFB] hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 items-center"
       >
-        <div className="col-span-6">
-          <div className="aspect-square w-full h-full relative">
+        <div className="col-span-5 sm:col-span-5">
+          <div className="aspect-square w-full rounded-xl overflow-hidden bg-white dark:bg-slate-900/60 p-2 relative flex items-center justify-center">
             <ImageWithPlaceholder
-              className="object-cover aspect-square h-full w-full rounded-sm "
-              alt={product?.translations?.name}
+              className="object-contain aspect-square h-full w-full rounded-lg transition-transform duration-500 ease-out group-hover:scale-105"
+              alt={product?.translations?.name ?? product?.name}
               src={product?.image_url}
               width={200}
               height={200}
             />
             {selectedVariant?.discounted_price !== 0 &&
               selectedVariant?.discounted_price !== selectedVariant?.price ? (
-              <span className="bg-[#db3d26] rounded-[4px] text-white text-[14px] font-semibold left-2 leading-[16px] px-2 py-1 absolute text-center uppercase top-2">
+              <span className="bg-[#FDD811] text-slate-900 rounded-full text-[10px] font-black left-2 leading-none px-2 py-1 absolute text-center uppercase top-2 shadow-subtle">
                 {calculateDiscount(
                   selectedVariant?.discounted_price,
                   selectedVariant?.price
@@ -476,131 +477,113 @@ const HorizontalProductCard = ({ product }) => {
                 % {t("off")}
               </span>
             ) : null}
-            <ul className="absolute right-5 top-5 lg:flex flex-col gap-2 translate-x-10 group-hover:translate-x-0 opacity-0 group-hover:opacity-100 transition-all duration-500 ease-in-out hidden">
+            <ul className="absolute right-2 top-2 flex flex-col gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0 z-10">
               <li
-                className="buttonBorder hover:primaryBorder rounded-full h-[30px] w-[30px] flex justify-center items-center bodyBackgroundColor"
+                className="w-7 h-7 rounded-full bg-white/95 hover:bg-white dark:bg-slate-800 shadow-subtle border border-slate-200/80 dark:border-slate-700 flex justify-center items-center text-slate-500 hover:text-rose-500 transition-all cursor-pointer"
                 onClick={handleProductLikes}
               >
                 <span>
                   {favoriteProducts &&
                     favoriteProducts?.includes(product?.id) ? (
-                    <BiSolidHeart size={20} className="primaryFilledColor" />
+                    <BiSolidHeart size={16} className="text-rose-500" />
                   ) : (
-                    <BiHeart size={20} className="svgColors  hover:primaryColor" />
+                    <BiHeart size={16} />
                   )}
                 </span>
               </li>
               <li
-                className="buttonBorder hover:primaryBorder rounded-full h-[30px] w-[30px] flex justify-center items-center bodyBackgroundColor"
+                className="w-7 h-7 rounded-full bg-white/95 hover:bg-white dark:bg-slate-800 shadow-subtle border border-slate-200/80 dark:border-slate-700 flex justify-center items-center text-slate-500 hover:text-[#0BADFB] transition-all cursor-pointer"
                 onClick={handleShowDetailModal}
               >
-                <FaRegEye size={18} className=" svgColors  hover:primaryColor" />
+                <FaRegEye size={14} />
               </li>
             </ul>
           </div>
         </div>
-        <div className="col-span-6">
-          <div className="flex flex-col  justify-between">
-            <div className="flex flex-col h-[100px] justify-between">
-              <h3 className="  text-[16px] font-bold   overflow-hidden text-ellipsis capitalize w-full group-hover:primaryColor line-clamp-1">
+        <div className="col-span-7 sm:col-span-7">
+          <div className="flex flex-col justify-between h-full space-y-2">
+            <div>
+              <h3 className="text-xs sm:text-sm font-extrabold uppercase tracking-wide text-slate-900 dark:text-white line-clamp-1 group-hover:text-[#0BADFB] transition-colors">
                 {product?.translations?.name ?? product?.name}
               </h3>
-              {/* {selectedVariant?.few_quantity_left == true && (
-                <p className="text-sm text-red-600 font-semibold"> {t("few_quantity_left")}</p>
-              )} */}
               {product?.average_rating > 0 &&
                 product?.product_rating == true ? (
-                <div className="rating">
-                  <div className="flex">
-                    <div className="flex">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <FaStar
-                          key={star}
-                          size={15}
-                          className={`${star <= product?.average_rating
-                            ? "fill-yellow-400 text-yellow-400"
-                            : "fill-gray-200 text-gray-200"
-                            }`}
-                        />
-                      ))}
-                    </div>
-                  </div>
+                <div className="flex items-center gap-1 my-1">
+                  <FaStar size={11} className="fill-amber-400 text-amber-400" />
+                  <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                    {Number(product?.average_rating).toFixed(1)}
+                  </span>
                 </div>
               ) : null}
-              <div className="flex">
+              <div className="flex items-baseline gap-1.5 mt-0.5">
                 {selectedVariant?.discounted_price !== 0 &&
                   selectedVariant?.discounted_price !== selectedVariant?.price ? (
                   <>
-                    {" "}
-                    <p className=" text-base font-bold">
+                    <span className="text-sm font-black text-slate-900 dark:text-white">
                       {setting?.currency}
                       {product?.variants?.[0]?.discounted_price}
-                    </p>
-                    <p className="text-[#868c93] text-[14px] font-normal leading-[17px] m-1 line-through">
+                    </span>
+                    <span className="text-xs text-slate-400 line-through">
                       {setting?.currency}
                       {selectedVariant?.price}
-                    </p>
+                    </span>
                   </>
                 ) : (
-                  <p className="text-base font-bold ">
+                  <span className="text-sm font-black text-slate-900 dark:text-white">
                     {setting?.currency}
                     {selectedVariant?.price}
-                  </p>
+                  </span>
                 )}
               </div>
             </div>
+
             {!isProductAvailabel ? (
-              <div className="flex gap-3  w-full flex-col ">
+              <div className="flex gap-1.5 w-full flex-col">
                 <button
-                  className=" w-full flex items-center justify-between rounded-[4px] p-2 buttonBackground  SecondaryTextColor"
+                  type="button"
+                  className="w-full flex items-center justify-between rounded-full px-2.5 py-1 bg-slate-50 dark:bg-slate-700/50 border border-slate-200/90 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 truncate"
                   onClick={(e) => handleShowVariantModal(e, product)}
                 >
-                  {`${selectedVariant?.measurement} ${selectedVariant?.unit?.translations?.short_code}`}
-                  {productsVariants?.length > 1 ? (
-                    <div>
-                      <MdArrowDropDown size={22} />
-                    </div>
-                  ) : (
-                    <></>
+                  <span className="truncate">
+                    {`${selectedVariant?.measurement || ""} ${selectedVariant?.unit?.translations?.short_code ?? selectedVariant?.unit?.short_code ?? ""}`}
+                  </span>
+                  {productsVariants?.length > 1 && (
+                    <MdArrowDropDown size={16} className="text-slate-400 flex-shrink-0" />
                   )}
                 </button>
                 {isProductAlreadyAdded ? (
-                  <div className="flex justify-between w-full">
+                  <div className="flex items-center justify-between w-full bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-700 rounded-full p-0.5 shadow-2xs">
                     <button
-                      className="rounded-[2px] primaryBackColor h-[38px] w-8 p-1 flex items-center justify-center font-bold text-white text-lg shrink-0
- "
+                      type="button"
+                      className="w-7 h-7 bg-white dark:bg-slate-800 hover:bg-[#e0f7fe] text-slate-700 dark:text-slate-200 hover:text-[#0BADFB] rounded-full flex items-center justify-center font-bold text-xs transition-colors shadow-2xs"
                       onClick={handleQuantityDecrease}
                     >
-                      <BiMinus />
+                      <BiMinus size={11} />
                     </button>
-                    <input
-                      type="text"
-                      disabled
-                      value={addedQuantity}
-                      min={"1"}
-                      max={selectedVariant?.stock}
-                      className="text-center w-full"
-                    />
+                    <span className="text-xs font-bold text-slate-800 dark:text-white text-center w-full">
+                      {addedQuantity}
+                    </span>
                     <button
-                      className="rounded-[2px] primaryBackColor h-[38px] w-8 p-1 flex items-center justify-center font-bold text-white text-lg shrink-0
-"
+                      type="button"
+                      className="w-7 h-7 bg-[#0BADFB] hover:bg-[#0298e0] text-white rounded-full flex items-center justify-center font-bold text-xs transition-colors shadow-2xs"
                       onClick={handleQuantityIncrease}
                     >
-                      <BiPlus />
+                      <BiPlus size={11} />
                     </button>
                   </div>
                 ) : (
                   <button
-                    className="w-full  flex gap-1 text-base  items-center  justify-center rounded-[4px] p-2 text-white addToCartColor primaryColor hover:primaryBackColor transition-all duration-300 hover:text-white"
+                    type="button"
+                    className="w-full flex items-center justify-center gap-1.5 text-xs font-bold py-1.5 px-2 rounded-full bg-[#0BADFB] hover:bg-[#0298e0] text-white shadow-xs transition-all duration-200 cursor-pointer"
                     onClick={handleIntialAddToCart}
                   >
-                    <FaShoppingBasket size={20} />
+                    <FaShoppingBasket size={13} />
                     <span>{t("add")}</span>
                   </button>
                 )}
               </div>
             ) : (
-              <div className="flex items-center h-[92px]  text-[#db3d26] font-extrabold ">
+              <div className="inline-flex items-center text-rose-600 text-xs font-bold bg-rose-50 dark:bg-rose-950/40 px-2 py-0.5 rounded-full">
                 {t("OutOfStock")}
               </div>
             )}

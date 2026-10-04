@@ -148,7 +148,7 @@ const CheckoutForm = ({
       <div className="flex justify-center">
         <button
           className={
-            "text-white text-base font-bold px-4 py-2 mt-4 primaryBackColor rounded-sm"
+            "text-white text-base font-bold px-4 py-2 mt-4 bg-[#0BADFB] hover:bg-[#0298e0] rounded-sm transition-colors cursor-pointer"
           }
           disabled={!stripe || isLoading}
         >

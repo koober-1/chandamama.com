@@ -16,7 +16,7 @@ export const registerUser = async ({
   phoneAuthType = false,
   friend_code,
   profile
-  
+
 }) => {
   const formData = new FormData();
   if (name) formData.append("name", name);
@@ -30,7 +30,7 @@ export const registerUser = async ({
       formData.append("password_confirmation", password_confirmation);
     }
   }
-  if(profile){
+  if (profile) {
     formData.append("profile", profile);
   }
   if (
@@ -245,8 +245,8 @@ export const getProductByFilter = async ({
   slug = "",
 }) => {
   const formData = new FormData();
-  formData.append("latitude", latitude);
-  formData.append("longitude", longitude);
+  formData.append("latitude", latitude || "23.2420");
+  formData.append("longitude", longitude || "69.6669");
   if (tag_names !== "") {
     formData.append("tag_names", tag_names);
   }
@@ -276,10 +276,21 @@ export const getBrands = async ({ limit, offset, latitude, longitude }) => {
   let params = {
     limit: limit,
     offset: offset,
-    latitude: latitude,
-    longitude: longitude,
+    latitude: latitude || "23.2420",
+    longitude: longitude || "69.6669",
   };
   const response = await api.get(apiEndPoints.getBrands, { params });
+  return response.data;
+};
+
+export const getOffers = async ({ latitude, longitude, limit = 10, offset = 0 } = {}) => {
+  const params = {
+    latitude: latitude || "23.2420",
+    longitude: longitude || "69.6669",
+    limit: limit,
+    offset: offset,
+  };
+  const response = await api.get(apiEndPoints.getOffer, { params });
   return response.data;
 };
 
@@ -293,8 +304,8 @@ export const getSetting = async () => {
 
 export const getProductById = async ({ latitude, longitude, slug, id }) => {
   const formData = new FormData();
-  formData.append("latitude", latitude);
-  formData.append("longitude", longitude);
+  formData.append("latitude", latitude || "23.2420");
+  formData.append("longitude", longitude || "69.6669");
   if (id !== -1) {
     formData.append("id", id);
   }
@@ -344,7 +355,7 @@ export const getSystemLanguages = async ({ id, isDefault, systemType }) => {
   return response.data;
 };
 
-export const updateFcmToken = async ({ langaugeId,fcmToken }) => {
+export const updateFcmToken = async ({ langaugeId, fcmToken }) => {
   const formData = new FormData();
   formData.append("language_id", langaugeId);
   formData.append("fcm_token", fcmToken);
@@ -648,7 +659,7 @@ export const initiateTrasaction = async ({
   if (type == "wallet" && walletAmount != 0) {
     formData.append("wallet_amount", walletAmount);
   }
-  if(type == "subscription"){
+  if (type == "subscription") {
     formData.append("subscription_plan_id", subscriptionPlanId);
   }
   const response = await api.post(
@@ -672,7 +683,7 @@ export const addTransaction = async ({
   if (walletAmount != 0 && type == "wallet") {
     formData.append("wallet_amount", walletAmount);
   }
-  if(type == "subscription"){
+  if (type == "subscription") {
     formData.append(
       "subscription_plan_id",
       subscriptionPlanId
@@ -984,8 +995,8 @@ export const getSubscriptionFaqs = async ({ offset, limit }) => {
 };
 
 export const getMailSettings = async () => {
-    const response = await api.get(`${apiEndPoints.mailSettings}`);
-    return response.data;
+  const response = await api.get(`${apiEndPoints.mailSettings}`);
+  return response.data;
 };
 
 export const updateMailSettings = async ({

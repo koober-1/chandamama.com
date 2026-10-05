@@ -5,11 +5,11 @@ import { logoutAuth } from "@/redux/slices/userSlice";
 const access_key_param = "x-access-key";
 const access_key = "903361";
 
-const isClient = typeof window !== "undefined";
-const url = isClient ? "" : (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000" || "https://login.chandaamama.com");
-const subUrl = process.env.NEXT_PUBLIC_API_SUBURL || "/customer";
+const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || "https://login.chandaamama.com";
+const normalizedUrl = rawApiUrl.replace(/\/+$/, "");
+const subUrl = (process.env.NEXT_PUBLIC_API_SUBURL || "/customer").replace(/\/+$/, "");
 const api = axios.create({
-  baseURL: `${url}${subUrl}/`,
+  baseURL: `${normalizedUrl}${subUrl}/`,
 });
 
 const getStoredToken = async () => {

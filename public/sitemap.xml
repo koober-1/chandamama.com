@@ -1,236 +1,236 @@
 <?xml version="1.0" encoding="UTF-8"?>
     <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
-    <loc>http://localhost:3000/404</loc>
-    <lastmod>2026-10-04T07:55:57.173Z</lastmod>
+    <loc>https://chandaamama.com/404</loc>
+    <lastmod>2026-10-05T16:23:10.002Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/</loc>
-    <lastmod>2026-10-04T07:55:57.175Z</lastmod>
+    <loc>https://chandaamama.com/</loc>
+    <lastmod>2026-10-05T16:23:10.003Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/about-us</loc>
-    <lastmod>2026-10-04T07:55:57.175Z</lastmod>
+    <loc>https://chandaamama.com/about-us</loc>
+    <lastmod>2026-10-05T16:23:10.003Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/blogs</loc>
-    <lastmod>2026-10-04T07:55:57.175Z</lastmod>
+    <loc>https://chandaamama.com/brands</loc>
+    <lastmod>2026-10-05T16:23:10.003Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/brands</loc>
-    <lastmod>2026-10-04T07:55:57.175Z</lastmod>
+    <loc>https://chandaamama.com/blogs</loc>
+    <lastmod>2026-10-05T16:23:10.003Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/cancellation-policy</loc>
-    <lastmod>2026-10-04T07:55:57.175Z</lastmod>
+    <loc>https://chandaamama.com/cancellation-policy</loc>
+    <lastmod>2026-10-05T16:23:10.003Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/cart</loc>
-    <lastmod>2026-10-04T07:55:57.175Z</lastmod>
+    <loc>https://chandaamama.com/cart</loc>
+    <lastmod>2026-10-05T16:23:10.003Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/categories</loc>
-    <lastmod>2026-10-04T07:55:57.175Z</lastmod>
+    <loc>https://chandaamama.com/categories</loc>
+    <lastmod>2026-10-05T16:23:10.003Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/checkout</loc>
-    <lastmod>2026-10-04T07:55:57.175Z</lastmod>
+    <loc>https://chandaamama.com/checkout</loc>
+    <lastmod>2026-10-05T16:23:10.003Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/contact-us</loc>
-    <lastmod>2026-10-04T07:55:57.175Z</lastmod>
+    <loc>https://chandaamama.com/contact-us</loc>
+    <lastmod>2026-10-05T16:23:10.003Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/countries</loc>
-    <lastmod>2026-10-04T07:55:57.175Z</lastmod>
+    <loc>https://chandaamama.com/countries</loc>
+    <lastmod>2026-10-05T16:23:10.003Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/faqs</loc>
-    <lastmod>2026-10-04T07:55:57.175Z</lastmod>
+    <loc>https://chandaamama.com/faqs</loc>
+    <lastmod>2026-10-05T16:23:10.003Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/privacy-policy</loc>
-    <lastmod>2026-10-04T07:55:57.175Z</lastmod>
+    <loc>https://chandaamama.com/privacy-policy</loc>
+    <lastmod>2026-10-05T16:23:10.003Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/products</loc>
-    <lastmod>2026-10-04T07:55:57.175Z</lastmod>
+    <loc>https://chandaamama.com/products</loc>
+    <lastmod>2026-10-05T16:23:10.003Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/return-and-echange-policy</loc>
-    <lastmod>2026-10-04T07:55:57.175Z</lastmod>
+    <loc>https://chandaamama.com/return-and-echange-policy</loc>
+    <lastmod>2026-10-05T16:23:10.003Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/profile</loc>
-    <lastmod>2026-10-04T07:55:57.175Z</lastmod>
+    <loc>https://chandaamama.com/profile</loc>
+    <lastmod>2026-10-05T16:23:10.003Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/sellers</loc>
-    <lastmod>2026-10-04T07:55:57.175Z</lastmod>
+    <loc>https://chandaamama.com/sellers</loc>
+    <lastmod>2026-10-05T16:23:10.003Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/shipping-policy</loc>
-    <lastmod>2026-10-04T07:55:57.175Z</lastmod>
+    <loc>https://chandaamama.com/shipping-policy</loc>
+    <lastmod>2026-10-05T16:23:10.003Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/uniforms</loc>
-    <lastmod>2026-10-04T07:55:57.175Z</lastmod>
+    <loc>https://chandaamama.com/terms-and-conditions</loc>
+    <lastmod>2026-10-05T16:23:10.003Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/terms-and-conditions</loc>
-    <lastmod>2026-10-04T07:55:57.175Z</lastmod>
+    <loc>https://chandaamama.com/uniforms</loc>
+    <lastmod>2026-10-05T16:23:10.003Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/web-payment-status</loc>
-    <lastmod>2026-10-04T07:55:57.175Z</lastmod>
+    <loc>https://chandaamama.com/web-payment-status</loc>
+    <lastmod>2026-10-05T16:23:10.003Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/blog/[slug]</loc>
-    <lastmod>2026-10-04T07:55:57.175Z</lastmod>
+    <loc>https://chandaamama.com/blog/[slug]</loc>
+    <lastmod>2026-10-05T16:23:10.003Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/blogs/[slug]</loc>
-    <lastmod>2026-10-04T07:55:57.175Z</lastmod>
+    <loc>https://chandaamama.com/blogs/[slug]</loc>
+    <lastmod>2026-10-05T16:23:10.003Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/categories/[slug]</loc>
-    <lastmod>2026-10-04T07:55:57.175Z</lastmod>
+    <loc>https://chandaamama.com/categories/[slug]</loc>
+    <lastmod>2026-10-05T16:23:10.003Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/news/[slug]</loc>
-    <lastmod>2026-10-04T07:55:57.175Z</lastmod>
+    <loc>https://chandaamama.com/order-detail/[orderid]</loc>
+    <lastmod>2026-10-05T16:23:10.003Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/product/[slug]</loc>
-    <lastmod>2026-10-04T07:55:57.175Z</lastmod>
+    <loc>https://chandaamama.com/news/[slug]</loc>
+    <lastmod>2026-10-05T16:23:10.003Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/order-detail/[orderid]</loc>
-    <lastmod>2026-10-04T07:55:57.175Z</lastmod>
+    <loc>https://chandaamama.com/product/[slug]</loc>
+    <lastmod>2026-10-05T16:23:10.003Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/profile/activeorders</loc>
-    <lastmod>2026-10-04T07:55:57.175Z</lastmod>
+    <loc>https://chandaamama.com/profile/activeorders</loc>
+    <lastmod>2026-10-05T16:23:10.003Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/profile/address</loc>
-    <lastmod>2026-10-04T07:55:57.175Z</lastmod>
+    <loc>https://chandaamama.com/profile/address</loc>
+    <lastmod>2026-10-05T16:23:10.003Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/profile/notifications</loc>
-    <lastmod>2026-10-04T07:55:57.175Z</lastmod>
+    <loc>https://chandaamama.com/profile/notification-setting</loc>
+    <lastmod>2026-10-05T16:23:10.003Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/profile/notification-setting</loc>
-    <lastmod>2026-10-04T07:55:57.175Z</lastmod>
+    <loc>https://chandaamama.com/profile/notifications</loc>
+    <lastmod>2026-10-05T16:23:10.003Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/profile/requested-products</loc>
-    <lastmod>2026-10-04T07:55:57.175Z</lastmod>
+    <loc>https://chandaamama.com/profile/orderhistory</loc>
+    <lastmod>2026-10-05T16:23:10.003Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/profile/subscription</loc>
-    <lastmod>2026-10-04T07:55:57.175Z</lastmod>
+    <loc>https://chandaamama.com/profile/resetpassword</loc>
+    <lastmod>2026-10-05T16:23:10.003Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/profile/orderhistory</loc>
-    <lastmod>2026-10-04T07:55:57.175Z</lastmod>
+    <loc>https://chandaamama.com/profile/requested-products</loc>
+    <lastmod>2026-10-05T16:23:10.003Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/profile/resetpassword</loc>
-    <lastmod>2026-10-04T07:55:57.175Z</lastmod>
+    <loc>https://chandaamama.com/profile/subscription</loc>
+    <lastmod>2026-10-05T16:23:10.003Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/profile/wishlist</loc>
-    <lastmod>2026-10-04T07:55:57.175Z</lastmod>
+    <loc>https://chandaamama.com/profile/transaction</loc>
+    <lastmod>2026-10-05T16:23:10.003Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/profile/transaction</loc>
-    <lastmod>2026-10-04T07:55:57.175Z</lastmod>
+    <loc>https://chandaamama.com/profile/wallethistory</loc>
+    <lastmod>2026-10-05T16:23:10.003Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/profile/wallethistory</loc>
-    <lastmod>2026-10-04T07:55:57.175Z</lastmod>
+    <loc>https://chandaamama.com/profile/wishlist</loc>
+    <lastmod>2026-10-05T16:23:10.003Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/profile/orderhistory/[orderid]</loc>
-    <lastmod>2026-10-04T07:55:57.175Z</lastmod>
+    <loc>https://chandaamama.com/profile/orderhistory/[orderid]</loc>
+    <lastmod>2026-10-05T16:23:10.003Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>

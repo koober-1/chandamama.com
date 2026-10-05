@@ -101,6 +101,9 @@ export const registerNotificationClickHandler = () => {
 };
 
 export const registerServiceWorker = () => {
+  if (!process.env.NEXT_PUBLIC_FIREBASE_API_KEY || !process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID) {
+    return;
+  }
   if (typeof window !== "undefined" && "serviceWorker" in navigator) {
     navigator.serviceWorker
       .register("/firebase-messaging-sw.js")
@@ -117,6 +120,9 @@ export const registerServiceWorker = () => {
 };
 
 export const fetchToken = async (dispatch) => {
+  if (!process.env.NEXT_PUBLIC_FIREBASE_API_KEY || !process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID) {
+    return;
+  }
   try {
     const messagingInstance = await getMessagingInstance();
     if (!messagingInstance) {

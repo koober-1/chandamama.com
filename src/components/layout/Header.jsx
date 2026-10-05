@@ -22,6 +22,7 @@ import {
   IoHomeOutline,
   IoSearchOutline,
   IoLanguage,
+  IoLocationOutline,
 } from "react-icons/io5";
 import { LuUser } from "react-icons/lu";
 import { FaPhoneVolume, FaXTwitter } from "react-icons/fa6";
